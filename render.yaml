@@ -1,14 +1,17 @@
 services:
-  - type: worker
-    name: the-bot
+  - type: web
+    name: the-bot-v5
     env: node
     region: singapore
     plan: free
     buildCommand: npm install
     startCommand: node index.js
+    healthCheckPath: /health
     autoDeploy: true
     envVars:
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: 10000
       - key: APPSTATE
         sync: false
