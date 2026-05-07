@@ -1,43 +1,42 @@
 /**
- * join.js — Welcome new members with AI canva image + message
- * Bot join message: "nandudurog ng tanga is now joining, kabahan na kayo"
+ * join.js — Welcome new members with AI canva image
+ * Bot join message: NANDUDUROG NG TANGA IS NOW JOINING, KABAHAN NA KAYO
  * TEAM STARTCOPE BETA
  */
-const bold   = require('../../utils/bold');
-const fs     = require('fs-extra');
-const path   = require('path');
-const axios  = require('axios');
+const bold  = require('../../utils/bold');
+const fs    = require('fs-extra');
+const path  = require('path');
+const axios = require('axios');
 
-const TEMP_DIR = path.join(process.cwd(), 'utils/data/welcome_temp');
-fs.ensureDirSync(TEMP_DIR);
+const TEMP_DIR = path.join(process.cwd(), 'utils', 'data', 'welcome_temp');
+try { fs.ensureDirSync(TEMP_DIR); } catch(e) { /* non-fatal */ }
 
 module.exports.config = {
     name:        'joinNoti',
     eventType:   ['log:subscribe'],
-    version:     '3.0.0',
+    version:     '3.1.0',
     credits:     'TEAM STARTCOPE BETA',
     description: 'Welcome members with AI canva image. Bot join has custom Tagalog message.',
 };
 
-// ── Generate welcome canva image via Pollinations ─────────────────────────────
-async function generateWelcomeImage(name, threadName) {
+// ── Generate welcome image via Pollinations ───────────────────────────────────
+async function generateWelcomeImage(name) {
     try {
-        const safeName   = name.replace(/[^\x00-\x7F]/g, '').trim().slice(0, 20) || 'New Member';
-        const safeThread = threadName.replace(/[^\x00-\x7F]/g, '').trim().slice(0, 25) || 'the group';
-        const seed       = Math.floor(Math.random() * 999999);
-        const prompt     = encodeURIComponent(
-            `professional welcome banner for Facebook group, ` +
-            `bold text "WELCOME" in large glowing gold letters at center, ` +
-            `name "${safeName}" in large white bold font below, ` +
-            `dark navy blue or deep purple gradient background, ` +
-            `colorful confetti and sparkles, neon accent lines, ` +
-            `bottom banner: "TEAM STARTCOPE BETA", ` +
-            `ultra HD 4K, sharp text, clean professional layout, no blur`
+        const safeName = String(name || 'New Member')
+            .replace(/[^\x20-\x7E]/g, '')   // ASCII only for URL safety
+            .trim()
+            .slice(0, 20) || 'New Member';
+        const seed   = Math.floor(Math.random() * 999999);
+        const prompt = encodeURIComponent(
+            `professional Facebook group welcome banner, bold glowing gold text "WELCOME" at center, ` +
+            `white bold text "${safeName}" below, dark navy blue deep purple gradient background, ` +
+            `colorful confetti sparkles neon accent lines, bottom text "TEAM STARTCOPE BETA", ` +
+            `ultra HD 4K sharp text clean professional layout`
         );
         const url = `https://image.pollinations.ai/prompt/${prompt}?width=1080&height=540&nologo=true&seed=${seed}&model=flux`;
         const res = await axios.get(url, { responseType: 'arraybuffer', timeout: 60000 });
-        if (!res.data || res.data.byteLength < 1000) throw new Error('Invalid image');
-        const fp = path.join(TEMP_DIR, `welcome_${Date.now()}.jpg`);
+        if (!res.data || res.data.byteLength < 1000) throw new Error('Invalid image response');
+        const fp = path.join(TEMP_DIR, `welcome_${Date.now()}_${Math.random().toString(36).slice(2)}.jpg`);
         fs.writeFileSync(fp, Buffer.from(res.data));
         return fp;
     } catch(e) {
@@ -45,94 +44,102 @@ async function generateWelcomeImage(name, threadName) {
     }
 }
 
-function cleanup(fp) {
-    setTimeout(() => { try { fs.removeSync(fp); } catch {} }, 300000);
+function cleanupLater(fp) {
+    setTimeout(() => { try { fs.removeSync(fp); } catch {} }, 600000); // 10 min
 }
 
 module.exports.run = async function ({ api, event, Users }) {
-    const { threadID } = event;
-
-    // ── Bot itself joined ─────────────────────────────────────────────────────
-    if (event.logMessageData.addedParticipants.some(p => p.userFbId == api.getCurrentUserID())) {
-        try {
-            api.changeNickname(
-                `[ ${global.config.PREFIX} ] • ${global.config.BOTNAME || 'Mirai Bot'}`,
-                threadID,
-                api.getCurrentUserID()
-            );
-        } catch {}
-        return api.sendMessage(
-            `🔥⚡ ${bold('NANDUDUROG NG TANGA IS NOW JOINING!')} ⚡🔥\n\n` +
-            `😤 ${bold('KABAHAN NA KAYO!')} Nandito na ang bot!\n\n` +
-            `🤖 ${bold(global.config.BOTNAME || 'Mirai Bot')} v${global.config.version || '5.0'}\n` +
-            `⌨️ Prefix: ${bold(global.config.PREFIX)}\n\n` +
-            `📖 I-type ang ${global.config.PREFIX}help para makita lahat ng commands!\n` +
-            `🎮 ${global.config.PREFIX}register — sumali sa games at manalo ng coins!\n\n` +
-            `💀 ${bold('Handa na ba kayo?!')} 😤🔥\n\n` +
-            `⚡ — ${bold('TEAM STARTCOPE BETA')} — ⚡`,
-            threadID
-        );
-    }
-
-    // ── New member(s) joined ──────────────────────────────────────────────────
     try {
-        const { threadName, participantIDs } = await api.getThreadInfo(threadID);
-        const mentions  = [];
-        const nameArray = [];
-        const memCounts = [];
-        let i = 0;
+        const { threadID } = event;
 
-        for (const p of event.logMessageData.addedParticipants) {
-            nameArray.push(p.fullName);
-            mentions.push({ tag: p.fullName, id: p.userFbId });
-            memCounts.push(participantIDs.length - i++);
-            if (!global.data.allUserID.includes(String(p.userFbId))) {
-                try { await Users.createData(p.userFbId, { name: p.fullName, data: {} }); } catch {}
-                global.data.allUserID.push(String(p.userFbId));
-            }
+        // ── Guard: need addedParticipants ─────────────────────────────────────
+        const added = event.logMessageData?.addedParticipants;
+        if (!added || !added.length) return;
+
+        const botUID = String(api.getCurrentUserID());
+
+        // ── Bot itself joined ─────────────────────────────────────────────────
+        if (added.some(p => String(p.userFbId) === botUID)) {
+            try {
+                api.changeNickname(
+                    `[ ${global.config.PREFIX} ] • ${global.config.BOTNAME || 'Mirai Bot'}`,
+                    threadID, botUID, () => {}
+                );
+            } catch(e) { /* non-fatal */ }
+
+            return api.sendMessage(
+                `🔥⚡ ${bold('NANDUDUROG NG TANGA IS NOW JOINING!')} ⚡🔥\n\n` +
+                `😤 ${bold('KABAHAN NA KAYO!')} Nandito na ang bot!\n\n` +
+                `🤖 ${bold(global.config.BOTNAME || 'Mirai Bot')} v${global.config.version || '5.0'}\n` +
+                `⌨️ Prefix: ${bold(global.config.PREFIX)}\n\n` +
+                `📖 I-type ang ${global.config.PREFIX}help para sa commands!\n` +
+                `🎮 ${global.config.PREFIX}register — sumali sa games (libre 100 coins!)\n\n` +
+                `💀 ${bold('Handa na ba kayo?!')} 😤🔥\n\n` +
+                `⚡ — ${bold('TEAM STARTCOPE BETA')} — ⚡`,
+                threadID
+            );
         }
-        memCounts.sort((a, b) => a - b);
 
-        const memberStr = memCounts.length === 1
-            ? `Member #${memCounts[0]}`
-            : `Members #${memCounts.join(', #')}`;
+        // ── New member(s) joined ──────────────────────────────────────────────
+        const nameArray = added.map(p => p.fullName || 'New Member');
+        const firstName = nameArray[0] || 'New Member';
 
-        const welcomeMsg =
+        // Register in DB if needed
+        for (const p of added) {
+            try {
+                const uid = String(p.userFbId);
+                if (!global.data.allUserID.includes(uid)) {
+                    await Users.createData(uid, { name: p.fullName || 'New Member', data: {} });
+                    global.data.allUserID.push(uid);
+                }
+            } catch(e) { /* non-fatal */ }
+        }
+
+        // Build welcome text
+        let threadName = 'the group';
+        try {
+            const info = await api.getThreadInfo(threadID);
+            if (info?.threadName) threadName = info.threadName;
+        } catch(e) { /* non-fatal */ }
+
+        const welcomeBody =
             `╔══════════════════════════════╗\n` +
             `║  👋 ${bold('WELCOME!')}               ║\n` +
             `╚══════════════════════════════╝\n\n` +
             `🎉 ${bold(nameArray.join(', '))}\n` +
-            `📌 ${memberStr} sa ${bold(threadName || 'group')}\n\n` +
+            `📌 Bagong miyembro ng ${bold(threadName)}!\n\n` +
             `📖 I-type ang ${global.config.PREFIX}help para sa commands!\n` +
-            `🎮 ${global.config.PREFIX}register — sumali sa games (free 100 coins!)\n\n` +
+            `🎮 ${global.config.PREFIX}register — libre 100 coins!\n` +
+            `🏅 ${global.config.PREFIX}rich — game leaderboard\n\n` +
             `⚡ — ${bold('TEAM STARTCOPE BETA')} — ⚡`;
 
-        // Try to generate welcome image (non-blocking)
-        const firstName = nameArray[0] || 'New Member';
-        generateWelcomeImage(firstName, threadName || 'the group').then(fp => {
+        // Generate AI welcome image (non-blocking)
+        generateWelcomeImage(firstName).then(fp => {
             if (fp) {
-                api.sendMessage({
-                    body: welcomeMsg,
-                    attachment: fs.createReadStream(fp),
-                    mentions
-                }, threadID, () => cleanup(fp));
+                api.sendMessage(
+                    { body: welcomeBody, attachment: fs.createReadStream(fp) },
+                    threadID,
+                    () => cleanupLater(fp)
+                );
             } else {
-                api.sendMessage({ body: welcomeMsg, mentions }, threadID);
+                api.sendMessage(welcomeBody, threadID);
             }
         }).catch(() => {
-            api.sendMessage({ body: welcomeMsg, mentions }, threadID);
+            api.sendMessage(welcomeBody, threadID);
         });
 
     } catch(e) {
-        // Fallback — simple welcome
+        // Last-resort fallback — never let the event handler crash
         try {
-            const names = event.logMessageData.addedParticipants.map(p => p.fullName).join(', ');
-            api.sendMessage(
-                `👋 ${bold('Welcome!')} ${names}!\n\n` +
-                `📖 I-type ang ${global.config.PREFIX}help para sa mga commands!\n` +
-                `🎮 ${global.config.PREFIX}register — libre 100 coins!`,
-                threadID
-            );
-        } catch {}
+            const added = event.logMessageData?.addedParticipants || [];
+            const names = added.map(p => p.fullName || 'someone').join(', ');
+            if (names) {
+                api.sendMessage(
+                    `👋 ${bold('Welcome!')} ${names}!\n` +
+                    `📖 ${global.config.PREFIX}help | 🎮 ${global.config.PREFIX}register`,
+                    event.threadID
+                );
+            }
+        } catch(e2) { /* absolute last resort silent */ }
     }
 };
