@@ -8,7 +8,7 @@ module.exports.config = {
     name:            'help',
     version:         '2.1.0',
     hasPermssion:    0,
-    credits:         'TEAM STARTCOPE BETA',
+    credits:         'xie',
     description:     'View all commands and detailed info per command',
     commandCategory: 'General',
     usages:          'help | help [command] | help all',
@@ -71,7 +71,7 @@ module.exports.run = async function ({ api, event, args }) {
         return api.sendMessage(
             `╔══════════════════════════╗\n║  📖 ${bold('COMMAND INFO')}       ║\n╚══════════════════════════╝\n\n` +
             `📌 ${bold('Name:')} ${c.name}\n` +
-            `👤 ${bold('Author:')} ${c.credits || 'TEAM STARTCOPE BETA'}\n` +
+            `👤 ${bold('Author:')} ${c.credits || 'THE BOT'}\n` +
             `📦 ${bold('Version:')} ${c.version || '1.0.0'}\n` +
             `🔐 ${bold('Permission:')} ${permText(c.hasPermssion ?? 0)}\n` +
             `📝 ${bold('Description:')} ${c.description || 'N/A'}\n` +
@@ -88,8 +88,8 @@ module.exports.run = async function ({ api, event, args }) {
 
     let msg =
         `╔══════════════════════════════╗\n` +
-        `║  🤖 ${bold('MIRAI-V5 — COMMANDS')}   ║\n` +
-        `║  ⚡ ${bold('TEAM STARTCOPE BETA')}  ║\n` +
+        `║  🤖 ${bold('THE BOT CMD')}   ║\n` +
+        `║  👤 ${bold('MODIFIED BY XIE!')}  ║\n` +
         `╚══════════════════════════════╝\n\n` +
         `🔑 ${bold('Prefix:')} ${P}   📊 ${bold('Total:')} ${cmds.size}\n\n`;
 
@@ -104,7 +104,7 @@ module.exports.run = async function ({ api, event, args }) {
         `💡 ${P}help [command] → details\n` +
         `💡 ${P}help all → full list\n` +
         `🎮 ${P}register → sumali sa games (free 100 coins!)\n\n` +
-        `🤖 ${bold(global.config.BOTNAME || 'Mirai-V5')} v${global.config.version || '5.0'}`;
+        `🤖 ${bold(global.config.BOTNAME || 'THE BOT')} v${global.config.version || '5.0'}`;
 
     return api.sendMessage(msg, threadID, messageID);
 };
