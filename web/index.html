@@ -3,144 +3,241 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Mirai Bot V5 — TEAM STARTCOPE BETA</title>
+  <title>THE-BOT V5 — TEAM STARTCOPE BETA</title>
   <style>
     :root {
-      --bg: #0a0a0f;
-      --card: #12121a;
-      --card2: #1a1a28;
-      --border: #2a2a40;
-      --accent: #7c3aed;
+      --bg:      #07070f;
+      --card:    #0f0f1e;
+      --card2:   #161628;
+      --border:  #252540;
+      --accent:  #7c3aed;
       --accent2: #a855f7;
-      --green: #22c55e;
-      --yellow: #facc15;
-      --red: #ef4444;
-      --blue: #3b82f6;
-      --text: #e2e8f0;
-      --sub: #94a3b8;
-      --radius: 12px;
+      --gold:    #f59e0b;
+      --green:   #22c55e;
+      --yellow:  #facc15;
+      --red:     #ef4444;
+      --blue:    #3b82f6;
+      --cyan:    #06b6d4;
+      --text:    #e2e8f0;
+      --sub:     #7c8db5;
+      --radius:  14px;
     }
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body { background:var(--bg); color:var(--text); font-family:'Segoe UI',system-ui,sans-serif; min-height:100vh; }
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;overflow-x:hidden}
+    a{color:inherit;text-decoration:none}
 
-    /* HEADER */
-    header {
-      background: linear-gradient(135deg, #1e003e 0%, #0d0d1a 40%, #001a3e 100%);
-      border-bottom: 1px solid var(--border);
-      padding: 40px 20px 32px;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
+    /* ── HEADER ── */
+    header{
+      background:linear-gradient(135deg,#1a003a 0%,#0a0a1f 45%,#001a3a 100%);
+      border-bottom:1px solid var(--border);
+      padding:48px 20px 36px;
+      text-align:center;
+      position:relative;
+      overflow:hidden;
     }
-    header::before {
-      content: '';
-      position: absolute; inset: 0;
-      background: radial-gradient(ellipse at 50% 0%, rgba(124,58,237,0.25) 0%, transparent 70%);
-      pointer-events: none;
+    header::before{
+      content:'';position:absolute;inset:0;
+      background:radial-gradient(ellipse at 50% -10%,rgba(124,58,237,.4) 0%,transparent 65%);
+      pointer-events:none;
     }
-    .bot-icon { font-size: 56px; line-height: 1; margin-bottom: 12px; }
-    .bot-title { font-size: 32px; font-weight: 900; letter-spacing: -1px; }
-    .bot-title span { color: var(--accent2); }
-    .bot-team { font-size: 11px; letter-spacing: 4px; color: var(--sub); margin-top: 6px; text-transform: uppercase; }
-    .status-badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.4);
-      border-radius: 20px; padding: 5px 14px; font-size: 12px;
-      color: var(--green); font-weight: 600; margin-top: 14px;
+    .bot-icon{font-size:64px;line-height:1;margin-bottom:14px;filter:drop-shadow(0 0 18px rgba(168,85,247,.5))}
+    .bot-title{font-size:36px;font-weight:900;letter-spacing:-1.5px;background:linear-gradient(135deg,#fff 30%,var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .bot-sub{font-size:12px;letter-spacing:5px;color:var(--sub);margin-top:4px;text-transform:uppercase}
+    .admin-line{font-size:12px;color:var(--gold);margin-top:6px;letter-spacing:1px}
+    .status-badge{
+      display:inline-flex;align-items:center;gap:7px;
+      background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.35);
+      border-radius:20px;padding:6px 16px;font-size:12px;
+      color:var(--green);font-weight:700;margin-top:16px;letter-spacing:.5px;
     }
-    .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 1.5s infinite; }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+    .dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite}
+    @keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(34,197,94,.4)}50%{opacity:.6;box-shadow:0 0 0 6px transparent}}
 
-    /* MAIN */
-    main { max-width: 960px; margin: 0 auto; padding: 28px 16px 80px; }
-
-    /* STAT CARDS */
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 12px; margin-bottom: 28px; }
-    .stat-card {
-      background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
-      padding: 18px 16px; text-align: center;
+    /* ── NAV TABS ── */
+    .nav{display:flex;justify-content:center;gap:6px;padding:16px 16px 0;flex-wrap:wrap}
+    .nav-btn{
+      padding:8px 18px;border-radius:20px;border:1px solid var(--border);
+      background:var(--card);cursor:pointer;font-size:12px;font-weight:600;
+      color:var(--sub);transition:all .2s;letter-spacing:.5px;
     }
-    .stat-icon { font-size: 28px; margin-bottom: 8px; }
-    .stat-value { font-size: 22px; font-weight: 800; color: var(--accent2); }
-    .stat-label { font-size: 11px; color: var(--sub); margin-top: 3px; text-transform: uppercase; letter-spacing: 1px; }
+    .nav-btn:hover,.nav-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
 
-    /* SECTION */
-    .section { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 20px; overflow: hidden; }
-    .section-header {
-      padding: 14px 18px; border-bottom: 1px solid var(--border);
-      font-size: 13px; font-weight: 700; letter-spacing: 1.5px;
-      text-transform: uppercase; color: var(--accent2);
-      display: flex; align-items: center; gap: 8px;
+    /* ── MAIN ── */
+    main{max-width:1040px;margin:0 auto;padding:24px 16px 80px}
+    .tab-pane{display:none}
+    .tab-pane.active{display:block}
+
+    /* ── STAT CARDS ── */
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px}
+    .stat-card{
+      background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+      padding:20px 16px;text-align:center;position:relative;overflow:hidden;
+      transition:border-color .2s;
     }
-    .section-body { padding: 16px 18px; }
-
-    /* CMD LIST */
-    .cmd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap: 8px; }
-    .cmd-item {
-      background: var(--card2); border: 1px solid var(--border); border-radius: 8px;
-      padding: 10px 12px;
+    .stat-card:hover{border-color:var(--accent)}
+    .stat-card::after{
+      content:'';position:absolute;top:0;left:0;right:0;height:2px;
+      background:linear-gradient(90deg,var(--accent),var(--accent2));
     }
-    .cmd-name { font-weight: 700; font-size: 14px; color: var(--accent2); }
-    .cmd-cat { font-size: 11px; color: var(--sub); margin-top: 2px; }
-    .cmd-perm { display: inline-block; font-size: 10px; border-radius: 4px; padding: 1px 6px; margin-top: 4px; }
-    .perm-0 { background:rgba(34,197,94,.15); color:var(--green); }
-    .perm-2 { background:rgba(124,58,237,.2); color:var(--accent2); }
+    .stat-icon{font-size:28px;margin-bottom:10px}
+    .stat-value{font-size:24px;font-weight:900;color:var(--accent2)}
+    .stat-label{font-size:10px;color:var(--sub);margin-top:4px;text-transform:uppercase;letter-spacing:1.5px}
 
-    /* FILES LIST */
-    .file-list { display: flex; flex-direction: column; gap: 6px; }
-    .file-item {
-      background: var(--card2); border: 1px solid var(--border); border-radius: 8px;
-      padding: 10px 14px; display: flex; align-items: center; gap: 10px;
+    /* ── SECTION ── */
+    .section{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:20px;overflow:hidden}
+    .section-header{
+      padding:14px 20px;border-bottom:1px solid var(--border);
+      font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;
+      color:var(--accent2);display:flex;align-items:center;gap:8px;
     }
-    .file-icon { font-size: 18px; flex-shrink: 0; }
-    .file-name { font-size: 13px; font-weight: 600; color: var(--text); }
-    .file-path { font-size: 11px; color: var(--sub); }
+    .section-body{padding:18px 20px}
 
-    /* DEPLOY */
-    .deploy-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap: 12px; }
-    .deploy-card {
-      background: var(--card2); border: 1px solid var(--border); border-radius: 10px;
-      padding: 16px;
+    /* ── LEADERBOARD ── */
+    .lb-list{display:flex;flex-direction:column;gap:8px}
+    .lb-item{
+      display:grid;grid-template-columns:36px 1fr auto auto;align-items:center;gap:12px;
+      background:var(--card2);border:1px solid var(--border);border-radius:10px;
+      padding:12px 14px;transition:border-color .2s;
     }
-    .deploy-name { font-weight: 700; font-size: 15px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
-    .deploy-step { font-size: 12px; color: var(--sub); margin: 4px 0; padding-left: 12px; border-left: 2px solid var(--border); }
-    .deploy-step.active { border-left-color: var(--accent2); color: var(--text); }
-    .tag { font-size: 10px; border-radius: 4px; padding: 2px 7px; font-weight: 600; }
-    .tag-green { background:rgba(34,197,94,.15); color:var(--green); }
-    .tag-blue  { background:rgba(59,130,246,.15); color:var(--blue); }
-    .tag-purple{ background:rgba(124,58,237,.2); color:var(--accent2); }
+    .lb-item:hover{border-color:var(--accent)}
+    .lb-rank{font-size:18px;text-align:center}
+    .lb-name{font-weight:700;font-size:14px}
+    .lb-meta{font-size:11px;color:var(--sub);margin-top:2px}
+    .lb-coins{font-size:16px;font-weight:900;color:var(--gold);white-space:nowrap}
+    .lb-wr{font-size:10px;color:var(--sub);text-align:right;margin-top:2px}
+    .lb-item.top1{border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.05)}
+    .lb-item.top2{border-color:rgba(148,163,184,.3)}
+    .lb-item.top3{border-color:rgba(180,120,70,.3)}
 
-    /* LOADING */
-    .loading { text-align:center; padding:30px; color:var(--sub); }
-    .spinner { width:28px; height:28px; border:3px solid var(--border); border-top-color:var(--accent2);
-               border-radius:50%; animation:spin .8s linear infinite; margin:0 auto 10px; }
-    @keyframes spin { to{ transform:rotate(360deg); } }
+    /* ── HP BAR ── */
+    .hp-bar{width:100%;height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:6px}
+    .hp-fill{height:100%;border-radius:3px;transition:width .5s ease}
 
-    /* UPTIME */
-    #uptimeVal { color:var(--green); font-weight:700; }
-    #pingVal   { color:var(--yellow); font-weight:700; }
+    /* ── COMMANDS ── */
+    .cmd-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+    .filter-btn{
+      padding:5px 12px;border-radius:12px;border:1px solid var(--border);
+      background:var(--card2);cursor:pointer;font-size:11px;color:var(--sub);
+      font-weight:600;transition:all .15s;
+    }
+    .filter-btn:hover,.filter-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+    .cmd-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
+    .cmd-item{
+      background:var(--card2);border:1px solid var(--border);border-radius:10px;
+      padding:12px 14px;transition:border-color .2s;
+    }
+    .cmd-item:hover{border-color:var(--accent)}
+    .cmd-name{font-weight:700;font-size:14px;color:var(--accent2)}
+    .cmd-desc{font-size:11px;color:var(--sub);margin-top:3px;line-height:1.4}
+    .cmd-cat{font-size:10px;color:var(--sub);margin-top:5px;display:flex;align-items:center;gap:5px}
+    .perm-tag{
+      font-size:9px;padding:2px 6px;border-radius:4px;font-weight:700;letter-spacing:.5px;
+    }
+    .perm-0{background:rgba(34,197,94,.15);color:var(--green)}
+    .perm-1{background:rgba(59,130,246,.15);color:var(--blue)}
+    .perm-2{background:rgba(124,58,237,.2);color:var(--accent2)}
+    .perm-3{background:rgba(245,158,11,.2);color:var(--gold)}
 
-    footer { text-align:center; padding:16px; color:var(--sub); font-size:11px; border-top:1px solid var(--border); letter-spacing:1px; }
+    /* ── GAME CARDS ── */
+    .game-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+    .game-card{
+      background:var(--card2);border:1px solid var(--border);border-radius:12px;
+      padding:16px;text-align:center;transition:all .2s;cursor:default;
+    }
+    .game-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+    .game-emoji{font-size:36px;margin-bottom:8px}
+    .game-name{font-weight:800;font-size:14px;color:var(--text)}
+    .game-cmd{font-size:12px;color:var(--accent2);margin-top:3px;font-family:monospace}
+    .game-reward{font-size:11px;color:var(--gold);margin-top:5px}
 
-    @media(max-width:560px) {
-      .bot-title { font-size:24px; }
-      .stats-grid { grid-template-columns: repeat(2,1fr); }
-      .cmd-grid   { grid-template-columns: repeat(2,1fr); }
+    /* ── PLAYERS TABLE ── */
+    .players-table{width:100%;border-collapse:collapse;font-size:13px}
+    .players-table th{
+      text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);
+      font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--sub);font-weight:700;
+    }
+    .players-table td{padding:10px 12px;border-bottom:1px solid rgba(37,37,64,.5)}
+    .players-table tr:last-child td{border-bottom:none}
+    .players-table tr:hover td{background:rgba(124,58,237,.05)}
+    .wr-good{color:var(--green)}
+    .wr-mid{color:var(--yellow)}
+    .wr-bad{color:var(--red)}
+
+    /* ── DEPLOY ── */
+    .deploy-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+    .deploy-card{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:18px}
+    .deploy-name{font-weight:800;font-size:15px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+    .deploy-step{font-size:12px;color:var(--sub);margin:5px 0;padding:6px 10px;border-radius:6px;border-left:3px solid var(--border)}
+    .deploy-step.on{border-left-color:var(--accent2);color:var(--text);background:rgba(124,58,237,.07)}
+    .code-block{
+      background:#050510;border:1px solid var(--border);border-radius:8px;
+      padding:10px 14px;font-family:monospace;font-size:12px;color:var(--cyan);
+      margin-top:10px;word-break:break-all;
+    }
+    .tag{font-size:10px;border-radius:4px;padding:2px 7px;font-weight:700}
+    .tag-green{background:rgba(34,197,94,.15);color:var(--green)}
+    .tag-blue{background:rgba(59,130,246,.15);color:var(--blue)}
+    .tag-purple{background:rgba(124,58,237,.2);color:var(--accent2)}
+    .tag-gold{background:rgba(245,158,11,.15);color:var(--gold)}
+
+    /* ── FILES ── */
+    .files-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
+    .file-item{
+      background:var(--card2);border:1px solid var(--border);border-radius:8px;
+      padding:10px 14px;display:flex;align-items:center;gap:10px;
+    }
+    .file-icon{font-size:18px;flex-shrink:0}
+    .file-name{font-size:13px;font-weight:600}
+    .file-path{font-size:10px;color:var(--sub);margin-top:1px}
+
+    /* ── MISC ── */
+    .loading{text-align:center;padding:36px;color:var(--sub)}
+    .spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--accent2);
+             border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .empty{text-align:center;padding:30px;color:var(--sub);font-size:13px}
+    .search-input{
+      width:100%;padding:10px 14px;background:var(--card2);border:1px solid var(--border);
+      border-radius:8px;color:var(--text);font-size:13px;outline:none;margin-bottom:14px;
+    }
+    .search-input:focus{border-color:var(--accent2)}
+
+    footer{text-align:center;padding:20px;color:var(--sub);font-size:11px;
+           border-top:1px solid var(--border);letter-spacing:1.5px}
+    @media(max-width:600px){
+      .bot-title{font-size:26px}
+      .stats-grid{grid-template-columns:repeat(2,1fr)}
+      .cmd-grid,.game-grid,.files-grid{grid-template-columns:repeat(2,1fr)}
+      .nav-btn{font-size:11px;padding:7px 12px}
     }
   </style>
 </head>
 <body>
 
+<!-- HEADER -->
 <header>
   <div class="bot-icon">🤖</div>
-  <div class="bot-title">MIRAI BOT <span>V5</span></div>
-  <div class="bot-team">⚡ TEAM STARTCOPE BETA ⚡</div>
-  <div class="status-badge"><div class="dot"></div> <span id="statusText">Checking...</span></div>
+  <div class="bot-title">THE-BOT <span style="color:var(--accent2)">V5</span></div>
+  <div class="bot-sub">⚡ TEAM STARTCOPE BETA ⚡</div>
+  <div class="admin-line">👑 Admin: <strong id="adminName">THE GOAT</strong></div>
+  <div class="status-badge"><div class="dot"></div><span id="statusText">Connecting...</span></div>
 </header>
+
+<!-- NAV TABS -->
+<div class="nav">
+  <button class="nav-btn active" onclick="switchTab('overview')">📊 Overview</button>
+  <button class="nav-btn" onclick="switchTab('leaderboard')">🏆 Leaderboard</button>
+  <button class="nav-btn" onclick="switchTab('players')">👥 Players</button>
+  <button class="nav-btn" onclick="switchTab('games')">🎮 Games</button>
+  <button class="nav-btn" onclick="switchTab('commands')">📋 Commands</button>
+  <button class="nav-btn" onclick="switchTab('deploy')">🚀 Deploy</button>
+  <button class="nav-btn" onclick="switchTab('files')">📁 Files</button>
+</div>
 
 <main>
 
-  <!-- STAT CARDS -->
+<!-- ══════════════ OVERVIEW ══════════════ -->
+<div class="tab-pane active" id="tab-overview">
   <div class="stats-grid">
     <div class="stat-card">
       <div class="stat-icon">⏱️</div>
@@ -151,6 +248,16 @@
       <div class="stat-icon">📦</div>
       <div class="stat-value" id="cmdCount">—</div>
       <div class="stat-label">Commands</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">👥</div>
+      <div class="stat-value" id="playerCount">—</div>
+      <div class="stat-label">Players</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">🎮</div>
+      <div class="stat-value" id="gamesCount">—</div>
+      <div class="stat-label">Games Played</div>
     </div>
     <div class="stat-card">
       <div class="stat-icon">⚡</div>
@@ -164,153 +271,504 @@
     </div>
   </div>
 
-  <!-- COMMANDS -->
+  <!-- Bot Info -->
   <div class="section">
-    <div class="section-header">📋 Commands</div>
+    <div class="section-header">🤖 Bot Info</div>
+    <div class="section-body" id="botInfo">
+      <div class="loading"><div class="spinner"></div>Loading...</div>
+    </div>
+  </div>
+
+  <!-- Top 3 Preview -->
+  <div class="section">
+    <div class="section-header">🏆 Top Players Preview</div>
     <div class="section-body">
+      <div id="top3List" class="lb-list">
+        <div class="loading"><div class="spinner"></div>Loading leaderboard...</div>
+      </div>
+      <div style="text-align:center;margin-top:14px">
+        <button class="nav-btn" onclick="switchTab('leaderboard')">View Full Leaderboard →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ LEADERBOARD ══════════════ -->
+<div class="tab-pane" id="tab-leaderboard">
+  <div class="section">
+    <div class="section-header">🏆 Coin Leaderboard</div>
+    <div class="section-body">
+      <div id="lbList" class="lb-list">
+        <div class="loading"><div class="spinner"></div>Loading...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ PLAYERS ══════════════ -->
+<div class="tab-pane" id="tab-players">
+  <div class="section">
+    <div class="section-header">👥 All Registered Players</div>
+    <div class="section-body">
+      <input class="search-input" id="playerSearch" type="text" placeholder="🔍  Search player name..." oninput="filterPlayers()" />
+      <div style="overflow-x:auto">
+        <table class="players-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Coins</th>
+              <th>W</th>
+              <th>L</th>
+              <th>D</th>
+              <th>Games</th>
+              <th>Win Rate</th>
+            </tr>
+          </thead>
+          <tbody id="playersTableBody">
+            <tr><td colspan="8"><div class="loading"><div class="spinner"></div>Loading...</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ GAMES ══════════════ -->
+<div class="tab-pane" id="tab-games">
+  <!-- Game Stats -->
+  <div class="stats-grid" style="margin-bottom:24px">
+    <div class="stat-card">
+      <div class="stat-icon">👥</div>
+      <div class="stat-value" id="g-players">—</div>
+      <div class="stat-label">Registered</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">🎮</div>
+      <div class="stat-value" id="g-games">—</div>
+      <div class="stat-label">Total Games</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">🏆</div>
+      <div class="stat-value" id="g-wins">—</div>
+      <div class="stat-label">Total Wins</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">💰</div>
+      <div class="stat-value" id="g-coins">—</div>
+      <div class="stat-label">Coins in Play</div>
+    </div>
+  </div>
+
+  <!-- Game Cards -->
+  <div class="section">
+    <div class="section-header">🎮 Available Games</div>
+    <div class="section-body">
+      <div class="game-grid">
+        <div class="game-card">
+          <div class="game-emoji">🪨</div>
+          <div class="game-name">Bato-Bato-Pick</div>
+          <div class="game-cmd">!rps</div>
+          <div class="game-reward">Win: +50 | Lose: -20</div>
+        </div>
+        <div class="game-card">
+          <div class="game-emoji">🧠</div>
+          <div class="game-name">Trivia Quiz</div>
+          <div class="game-cmd">!trivia</div>
+          <div class="game-reward">Win: +100 | Lose: -30</div>
+        </div>
+        <div class="game-card">
+          <div class="game-emoji">🎯</div>
+          <div class="game-name">Number Guessing</div>
+          <div class="game-cmd">!guess</div>
+          <div class="game-reward">Win: +40~150 | Lose: -20</div>
+        </div>
+        <div class="game-card">
+          <div class="game-emoji">❌</div>
+          <div class="game-name">Tic Tac Toe</div>
+          <div class="game-cmd">!ttt</div>
+          <div class="game-reward">Win: +60 | Lose: -20</div>
+        </div>
+        <div class="game-card">
+          <div class="game-emoji">🔢</div>
+          <div class="game-name">Math Quiz</div>
+          <div class="game-cmd">!math</div>
+          <div class="game-reward">Win: +30~80 | Lose: -10</div>
+        </div>
+        <div class="game-card">
+          <div class="game-emoji">🪙</div>
+          <div class="game-name">Coin Flip</div>
+          <div class="game-cmd">!coinflip</div>
+          <div class="game-reward">Bet any amount — 50/50</div>
+        </div>
+        <div class="game-card">
+          <div class="game-emoji">⚔️</div>
+          <div class="game-name">Anime Fight</div>
+          <div class="game-cmd">!fight</div>
+          <div class="game-reward">Win: +80 | Lose: -30</div>
+        </div>
+        <div class="game-card">
+          <div class="game-emoji">🏦</div>
+          <div class="game-name">Daily Coins</div>
+          <div class="game-cmd">!register</div>
+          <div class="game-reward">Start: 100 free coins</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- How to play -->
+  <div class="section">
+    <div class="section-header">📖 How to Play</div>
+    <div class="section-body">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="deploy-step on">1️⃣  Type <code style="color:var(--accent2)">!register</code> in the group chat — FREE, get 100 starting coins</div>
+        <div class="deploy-step on">2️⃣  Pick any game: !rps, !trivia, !guess, !ttt, !math, !coinflip, !fight</div>
+        <div class="deploy-step on">3️⃣  Win coins and climb the leaderboard — check with <code style="color:var(--accent2)">!rich</code></div>
+        <div class="deploy-step on">4️⃣  Challenge friends: <code style="color:var(--accent2)">!fight @name</code> or <code style="color:var(--accent2)">!coinflip challenge @name [bet]</code></div>
+        <div class="deploy-step on">5️⃣  Battle royale: <code style="color:var(--accent2)">!fight all</code> — everyone fights at once!</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ COMMANDS ══════════════ -->
+<div class="tab-pane" id="tab-commands">
+  <div class="section">
+    <div class="section-header">📋 All Commands</div>
+    <div class="section-body">
+      <div class="cmd-filter" id="catFilter">
+        <button class="filter-btn active" onclick="filterCmds(this,'all')">All</button>
+      </div>
       <div id="cmdGrid" class="cmd-grid">
         <div class="loading"><div class="spinner"></div>Loading commands...</div>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- FILES -->
+<!-- ══════════════ DEPLOY ══════════════ -->
+<div class="tab-pane" id="tab-deploy">
   <div class="section">
-    <div class="section-header">📁 Bot Files</div>
+    <div class="section-header">🚀 Deployment Guide</div>
     <div class="section-body">
-      <div id="filesList" class="file-list">
+      <div class="deploy-grid">
+
+        <div class="deploy-card">
+          <div class="deploy-name">🟢 Render <span class="tag tag-green">RECOMMENDED</span></div>
+          <div class="deploy-step on">1. render.com → New → Web Service</div>
+          <div class="deploy-step on">2. Connect: github.com/iop2026/THE-BOT</div>
+          <div class="deploy-step on">3. Build: <code>npm install</code></div>
+          <div class="deploy-step on">4. Start: <code>node index.js</code></div>
+          <div class="deploy-step on">5. Region: Singapore | Plan: Free</div>
+          <div class="deploy-step on">6. Add env var: <code>APPSTATE</code> = paste appstate.json</div>
+          <div class="code-block">Health check: /health<br>Auto-ping: every 13min ✅</div>
+        </div>
+
+        <div class="deploy-card">
+          <div class="deploy-name">🔵 Railway <span class="tag tag-blue">FAST</span></div>
+          <div class="deploy-step on">1. railway.app → New Project</div>
+          <div class="deploy-step on">2. Deploy from GitHub → iop2026/THE-BOT</div>
+          <div class="deploy-step on">3. railway.toml auto-configures everything</div>
+          <div class="deploy-step on">4. Add env: APPSTATE = &lt;appstate.json contents&gt;</div>
+          <div class="deploy-step on">5. Deploy — bot starts automatically</div>
+          <div class="code-block">Health: /health<br>Auto-restart on crash ✅</div>
+        </div>
+
+        <div class="deploy-card">
+          <div class="deploy-name">🟡 Koyeb <span class="tag tag-gold">ALWAYS ON</span></div>
+          <div class="deploy-step on">1. koyeb.com → New App → GitHub</div>
+          <div class="deploy-step on">2. Connect iop2026/THE-BOT</div>
+          <div class="deploy-step on">3. Instance: Nano (free) | Region: Singapore</div>
+          <div class="deploy-step on">4. Start: node index.js</div>
+          <div class="deploy-step on">5. Add env: APPSTATE and NODE_ENV=production</div>
+          <div class="code-block">Never sleeps on free tier ✅</div>
+        </div>
+
+        <div class="deploy-card">
+          <div class="deploy-name">🟣 Heroku <span class="tag tag-purple">CLASSIC</span></div>
+          <div class="deploy-step on">1. heroku.com → New App</div>
+          <div class="deploy-step on">2. Connect GitHub → iop2026/THE-BOT</div>
+          <div class="deploy-step on">3. Procfile already configured ✅</div>
+          <div class="deploy-step on">4. Config vars: APPSTATE = &lt;paste contents&gt;</div>
+          <div class="deploy-step">Note: Free tier removed — requires paid dyno</div>
+          <div class="code-block">Procfile: web: node index.js</div>
+        </div>
+
+      </div>
+
+      <!-- ENV GUIDE -->
+      <div class="section" style="margin-top:20px">
+        <div class="section-header">🔑 Required Environment Variables</div>
+        <div class="section-body">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div class="deploy-step on"><strong style="color:var(--accent2)">APPSTATE</strong> — Contents of your appstate.json (Facebook session cookies as JSON array)</div>
+            <div class="deploy-step on"><strong style="color:var(--green)">NODE_ENV</strong> = production</div>
+            <div class="deploy-step on"><strong style="color:var(--yellow)">PORT</strong> = 10000 (for Render) | auto-assigned on Railway/Koyeb</div>
+            <div class="deploy-step"><strong style="color:var(--sub)">RENDER_EXTERNAL_URL</strong> — Set automatically by Render (enables keep-alive ping)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ FILES ══════════════ -->
+<div class="tab-pane" id="tab-files">
+  <div class="section">
+    <div class="section-header">📁 Bot File Structure</div>
+    <div class="section-body">
+      <div id="filesList" class="files-grid">
         <div class="loading"><div class="spinner"></div>Loading files...</div>
       </div>
     </div>
   </div>
-
-  <!-- DEPLOYMENT -->
-  <div class="section">
-    <div class="section-header">🚀 Deployment Info</div>
-    <div class="section-body">
-      <div class="deploy-grid">
-        <div class="deploy-card">
-          <div class="deploy-name">🟢 Render <span class="tag tag-green">RECOMMENDED</span></div>
-          <div class="deploy-step active">1. Go to render.com → New → Background Worker</div>
-          <div class="deploy-step active">2. Connect iop2026/THE-BOT repo</div>
-          <div class="deploy-step active">3. Build: npm install | Start: node index.js</div>
-          <div class="deploy-step active">4. Add env: APPSTATE = &lt;appstate.json contents&gt;</div>
-          <div class="deploy-step active">5. Region: Singapore | Plan: Free</div>
-        </div>
-        <div class="deploy-card">
-          <div class="deploy-name">🔵 Railway <span class="tag tag-blue">FAST</span></div>
-          <div class="deploy-step active">1. Go to railway.app → New Project</div>
-          <div class="deploy-step active">2. Deploy from GitHub → iop2026/THE-BOT</div>
-          <div class="deploy-step active">3. railway.toml auto-configures build</div>
-          <div class="deploy-step active">4. Add env: APPSTATE = &lt;appstate.json contents&gt;</div>
-        </div>
-        <div class="deploy-card">
-          <div class="deploy-name">🟣 Vercel <span class="tag tag-purple">WEB ONLY</span></div>
-          <div class="deploy-step">1. Serverless — web dashboard only</div>
-          <div class="deploy-step">2. Bot messaging disabled on Vercel</div>
-          <div class="deploy-step active">3. Use Render/Railway for full bot</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- BOT INFO -->
-  <div class="section">
-    <div class="section-header">ℹ️ Bot Info</div>
-    <div class="section-body">
-      <div id="botInfo" class="file-list">
-        <div class="loading"><div class="spinner"></div>Loading...</div>
-      </div>
-    </div>
-  </div>
+</div>
 
 </main>
 
-<footer>MIRAI BOT V5 · TEAM STARTCOPE BETA · 2026</footer>
+<footer>THE-BOT V5 · TEAM STARTCOPE BETA · 2026 · Admin: THE GOAT</footer>
 
 <script>
-const CATS = { Admin:'🛡️', Games:'🎮', General:'📋', AI:'🤖', Group:'👥', Other:'📦' };
-const PERMS = { 0:'Member', 1:'Group Admin', 2:'Bot Admin', 3:'Owner' };
+// ── Globals ───────────────────────────────────────────────────────────────────
+const MEDALS  = ['🥇','🥈','🥉','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟','11','12','13','14','15','16','17','18','19','20'];
+const CATS    = { Admin:'🛡️', Games:'🎮', General:'📋', AI:'🤖', Group:'👥', Other:'📦' };
+const PERMS   = ['Member','Group Admin','Bot Admin','Owner'];
+let   allCmds = [];
+let   allPlayers = [];
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 function fmtUptime(sec) {
-  const d = Math.floor(sec/86400), h = Math.floor((sec%86400)/3600),
-        m = Math.floor((sec%3600)/60), s = Math.floor(sec%60);
-  if (d>0) return `${d}d ${h}h ${m}m`;
-  if (h>0) return `${h}h ${m}m ${s}s`;
+  const d=Math.floor(sec/86400),h=Math.floor((sec%86400)/3600),
+        m=Math.floor((sec%3600)/60),s=Math.floor(sec%60);
+  if(d>0) return `${d}d ${h}h ${m}m`;
+  if(h>0) return `${h}h ${m}m`;
   return `${m}m ${s}s`;
 }
 
-function esc(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function fmtNum(n){
+  if(n>=1000000) return (n/1000000).toFixed(1)+'M';
+  if(n>=1000)    return (n/1000).toFixed(1)+'K';
+  return String(n);
 }
 
+// ── Tab switch ────────────────────────────────────────────────────────────────
+function switchTab(id) {
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  const pane = document.getElementById('tab-'+id);
+  if(pane) pane.classList.add('active');
+  const btns = document.querySelectorAll('.nav-btn');
+  btns.forEach(b=>{ if(b.textContent.toLowerCase().includes(id.toLowerCase())) b.classList.add('active'); });
+}
+
+// ── Build leaderboard row ─────────────────────────────────────────────────────
+function buildLbRow(p, i) {
+  const medal = i<10 ? MEDALS[i] : `${i+1}.`;
+  const cls   = i===0?'lb-item top1':i===1?'lb-item top2':i===2?'lb-item top3':'lb-item';
+  const wr    = p.gamesPlayed>0?((p.wins/p.gamesPlayed)*100).toFixed(0):'0';
+  const maxCoins = 10000;
+  const pct   = Math.min(100, Math.round((p.coins/maxCoins)*100));
+  const barColor = pct>60?'var(--green)':pct>30?'var(--yellow)':'var(--red)';
+  return `<div class="${cls}">
+    <div class="lb-rank">${medal}</div>
+    <div>
+      <div class="lb-name">${esc(p.name)}</div>
+      <div class="hp-bar"><div class="hp-fill" style="width:${pct}%;background:${barColor}"></div></div>
+      <div class="lb-meta">🎮 ${p.gamesPlayed||0} games · W${p.wins||0}/L${p.losses||0}/D${p.draws||0}</div>
+    </div>
+    <div>
+      <div class="lb-coins">💰 ${(p.coins||0).toLocaleString()}</div>
+      <div class="lb-wr">WR: ${wr}%</div>
+    </div>
+  </div>`;
+}
+
+// ── Fetch and render status ───────────────────────────────────────────────────
 async function fetchStatus() {
   const t0 = Date.now();
   try {
     const res  = await fetch('/api/status');
-    const ping = Date.now() - t0;
-    const data = await res.json();
+    const ping = Date.now()-t0;
+    const d    = await res.json();
 
-    document.getElementById('statusText').textContent = 'Online — Bot Active';
-    document.getElementById('uptimeVal').textContent  = fmtUptime(data.uptime || 0);
-    document.getElementById('cmdCount').textContent   = data.commandCount || 0;
-    document.getElementById('pingVal').textContent    = ping + 'ms';
-    document.getElementById('memVal').textContent     = (data.memoryMB || 0) + ' MB';
+    document.getElementById('statusText').textContent = `Online — ${d.botName}`;
+    if(d.adminName) document.getElementById('adminName').textContent = d.adminName;
+    document.getElementById('uptimeVal').textContent  = fmtUptime(d.uptime||0);
+    document.getElementById('cmdCount').textContent   = d.commandCount||0;
+    document.getElementById('pingVal').textContent    = ping+'ms';
+    document.getElementById('memVal').textContent     = (d.memoryMB||0)+' MB';
+    if(d.gameStats){
+      document.getElementById('playerCount').textContent = d.gameStats.totalPlayers||0;
+      document.getElementById('gamesCount').textContent  = fmtNum(d.gameStats.totalGames||0);
+    }
+
+    // Bot info panel
+    document.getElementById('botInfo').innerHTML = `
+      <div class="files-grid">
+        <div class="file-item"><div class="file-icon">🤖</div><div><div class="file-name">${esc(d.botName)}</div><div class="file-path">Bot Name</div></div></div>
+        <div class="file-item"><div class="file-icon">👑</div><div><div class="file-name">${esc(d.adminName||'THE GOAT')}</div><div class="file-path">Admin</div></div></div>
+        <div class="file-item"><div class="file-icon">📦</div><div><div class="file-name">v${esc(d.version)}</div><div class="file-path">Version</div></div></div>
+        <div class="file-item"><div class="file-icon">⌨️</div><div><div class="file-name">${esc(d.prefix)}</div><div class="file-path">Prefix</div></div></div>
+        <div class="file-item"><div class="file-icon">🌐</div><div><div class="file-name">${esc(d.node)}</div><div class="file-path">Node.js</div></div></div>
+        <div class="file-item"><div class="file-icon">🚀</div><div><div class="file-name">${esc(d.platform)}</div><div class="file-path">Platform</div></div></div>
+      </div>`;
 
     // Commands
-    const cmds = data.commands || [];
-    if (cmds.length) {
-      document.getElementById('cmdGrid').innerHTML = cmds.map(c => `
-        <div class="cmd-item">
-          <div class="cmd-name">${esc(data.prefix||'!')}${esc(c.name)}</div>
-          <div class="cmd-cat">${CATS[c.category]||'📦'} ${esc(c.category)}</div>
-          <span class="cmd-perm perm-${c.permission}">${esc(PERMS[c.permission]||'Member')}</span>
-        </div>
-      `).join('');
-    } else {
-      document.getElementById('cmdGrid').innerHTML = '<div style="color:var(--sub);font-size:13px">No commands loaded.</div>';
-    }
+    allCmds = d.commands || [];
+    renderCommands(allCmds, 'all');
+    buildCatFilters(allCmds);
 
     // Files
-    const files = data.files || [];
-    if (files.length) {
-      document.getElementById('filesList').innerHTML = files.map(f => `
-        <div class="file-item">
+    const files = d.files||[];
+    document.getElementById('filesList').innerHTML = files.length
+      ? files.map(f=>`<div class="file-item">
           <div class="file-icon">${f.type==='command'?'⚡':f.type==='event'?'📡':'📄'}</div>
-          <div>
-            <div class="file-name">${esc(f.name)}</div>
-            <div class="file-path">${esc(f.path)}</div>
-          </div>
-        </div>
-      `).join('');
-    }
+          <div><div class="file-name">${esc(f.name)}</div><div class="file-path">${esc(f.path)}</div></div>
+        </div>`).join('')
+      : '<div class="empty">No files found.</div>';
 
-    // Bot info
-    document.getElementById('botInfo').innerHTML = `
-      <div class="file-item"><div class="file-icon">🤖</div><div><div class="file-name">Bot Name</div><div class="file-path">${esc(data.botName)}</div></div></div>
-      <div class="file-item"><div class="file-icon">📦</div><div><div class="file-name">Version</div><div class="file-path">${esc(data.version)}</div></div></div>
-      <div class="file-item"><div class="file-icon">⌨️</div><div><div class="file-name">Prefix</div><div class="file-path">${esc(data.prefix)}</div></div></div>
-      <div class="file-item"><div class="file-icon">🌐</div><div><div class="file-name">Node.js</div><div class="file-path">${esc(data.node)}</div></div></div>
-      <div class="file-item"><div class="file-icon">🚀</div><div><div class="file-name">Platform</div><div class="file-path">${esc(data.platform)}</div></div></div>
-      <div class="file-item"><div class="file-icon">👑</div><div><div class="file-name">Team</div><div class="file-path">TEAM STARTCOPE BETA</div></div></div>
-    `;
   } catch(e) {
-    document.getElementById('statusText').textContent = 'Checking connection...';
-    document.getElementById('pingVal').textContent    = 'N/A';
+    document.getElementById('statusText').textContent = 'Reconnecting...';
   }
 }
 
-// Poll every 30s
-fetchStatus();
-setInterval(fetchStatus, 30000);
+// ── Leaderboard ────────────────────────────────────────────────────────────────
+async function fetchLeaderboard() {
+  try {
+    const res = await fetch('/api/leaderboard?limit=20');
+    const d   = await res.json();
+    const lb  = d.leaderboard||[];
 
-// Live uptime counter
-setInterval(() => {
-  const el  = document.getElementById('uptimeVal');
-  const txt = el.textContent;
-  const sec = parseInt(txt);
-  if (!isNaN(sec)) el.textContent = fmtUptime(sec + 30);
-}, 30000);
+    const html = lb.length
+      ? lb.map((p,i)=>buildLbRow(p,i)).join('')
+      : '<div class="empty">😔 No players yet — type !register in the group!</div>';
+
+    document.getElementById('lbList').innerHTML    = html;
+    document.getElementById('top3List').innerHTML  = lb.slice(0,3).map((p,i)=>buildLbRow(p,i)).join('')
+      || '<div class="empty">No players yet.</div>';
+  } catch(e) {
+    document.getElementById('lbList').innerHTML = '<div class="empty">Failed to load leaderboard.</div>';
+  }
+}
+
+// ── Players table ──────────────────────────────────────────────────────────────
+async function fetchPlayers() {
+  try {
+    const res = await fetch('/api/players');
+    const d   = await res.json();
+    allPlayers = (d.players||[]).sort((a,b)=>(b.coins||0)-(a.coins||0));
+    renderPlayers(allPlayers);
+  } catch(e) {
+    document.getElementById('playersTableBody').innerHTML = '<tr><td colspan="8"><div class="empty">Failed to load players.</div></td></tr>';
+  }
+}
+
+function renderPlayers(players) {
+  if(!players.length){
+    document.getElementById('playersTableBody').innerHTML = '<tr><td colspan="8"><div class="empty">No players yet.</div></td></tr>';
+    return;
+  }
+  document.getElementById('playersTableBody').innerHTML = players.map((p,i)=>{
+    const wr    = p.gamesPlayed>0?((p.wins/p.gamesPlayed)*100).toFixed(1):'0.0';
+    const wrCls = parseFloat(wr)>=60?'wr-good':parseFloat(wr)>=40?'wr-mid':'wr-bad';
+    return `<tr>
+      <td style="color:var(--sub)">${i+1}</td>
+      <td style="font-weight:700">${esc(p.name)}</td>
+      <td style="color:var(--gold);font-weight:700">💰 ${(p.coins||0).toLocaleString()}</td>
+      <td style="color:var(--green)">${p.wins||0}</td>
+      <td style="color:var(--red)">${p.losses||0}</td>
+      <td style="color:var(--sub)">${p.draws||0}</td>
+      <td style="color:var(--sub)">${p.gamesPlayed||0}</td>
+      <td class="${wrCls}">${wr}%</td>
+    </tr>`;
+  }).join('');
+}
+
+function filterPlayers() {
+  const q = (document.getElementById('playerSearch').value||'').toLowerCase();
+  renderPlayers(allPlayers.filter(p=>(p.name||'').toLowerCase().includes(q)));
+}
+
+// ── Game stats ─────────────────────────────────────────────────────────────────
+async function fetchGameStats() {
+  try {
+    const res = await fetch('/api/gamedb');
+    const d   = await res.json();
+    const s   = d.stats||{};
+    document.getElementById('g-players').textContent = s.totalPlayers||0;
+    document.getElementById('g-games').textContent   = fmtNum(s.totalGames||0);
+    document.getElementById('g-wins').textContent    = fmtNum(s.totalWins||0);
+    document.getElementById('g-coins').textContent   = fmtNum(s.totalCoins||0);
+  } catch(e){}
+}
+
+// ── Commands ──────────────────────────────────────────────────────────────────
+function buildCatFilters(cmds) {
+  const cats = [...new Set(cmds.map(c=>c.category))].sort();
+  const el   = document.getElementById('catFilter');
+  const current = el.innerHTML;
+  if(el.children.length>1) return;
+  cats.forEach(cat=>{
+    const btn = document.createElement('button');
+    btn.className = 'filter-btn';
+    btn.textContent = (CATS[cat]||'📦') + ' ' + cat;
+    btn.onclick = ()=>filterCmds(btn, cat);
+    el.appendChild(btn);
+  });
+}
+
+function filterCmds(btn, cat) {
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const filtered = cat==='all' ? allCmds : allCmds.filter(c=>c.category===cat);
+  renderCommands(filtered, cat);
+}
+
+function renderCommands(cmds, cat) {
+  if(!cmds.length){
+    document.getElementById('cmdGrid').innerHTML = '<div class="empty">No commands found.</div>';
+    return;
+  }
+  document.getElementById('cmdGrid').innerHTML = cmds.map(c=>`
+    <div class="cmd-item">
+      <div class="cmd-name">!${esc(c.name)}</div>
+      <div class="cmd-desc">${esc(c.description||'')}</div>
+      <div class="cmd-cat">
+        <span>${CATS[c.category]||'📦'} ${esc(c.category)}</span>
+        <span class="perm-tag perm-${c.permission}">${PERMS[c.permission]||'Member'}</span>
+        <span style="color:var(--sub);margin-left:auto">⏱️${c.cooldowns||3}s</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── Live uptime ticker ────────────────────────────────────────────────────────
+let _uptimeSec = 0;
+async function initUptime() {
+  try {
+    const res = await fetch('/api/status');
+    const d   = await res.json();
+    _uptimeSec = d.uptime||0;
+  } catch(e){}
+}
+setInterval(()=>{
+  _uptimeSec++;
+  const el = document.getElementById('uptimeVal');
+  if(el) el.textContent = fmtUptime(_uptimeSec);
+}, 1000);
+
+// ── Init ───────────────────────────────────────────────────────────────────────
+(async ()=>{
+  await initUptime();
+  await Promise.all([fetchStatus(), fetchLeaderboard(), fetchPlayers(), fetchGameStats()]);
+  setInterval(fetchStatus,      30000);
+  setInterval(fetchLeaderboard, 20000);
+  setInterval(fetchPlayers,     30000);
+  setInterval(fetchGameStats,   20000);
+})();
 </script>
 </body>
 </html>
