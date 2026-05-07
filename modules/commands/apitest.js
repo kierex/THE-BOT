@@ -11,7 +11,7 @@ module.exports.config = {
     name:            'apitest',
     version:         '1.0.0',
     hasPermssion:    2,
-    credits:         'TEAM STARTCOPE BETA',
+    credits:         'xie',
     description:     'Test bot API connection and check bot status',
     commandCategory: 'Admin',
     usages:          'apitest',
