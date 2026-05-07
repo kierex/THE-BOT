@@ -1,28 +1,31 @@
 /**
- * gamedb.js — Persistent game database utility
- * Saves player data to utils/data/gamedb.json
- * Survives server restarts and resets
+ * gamedb.js — Persistent game database (atomic file I/O)
  * TEAM STARTCOPE BETA
  */
 const fs   = require('fs-extra');
 const path = require('path');
 
-const DATA_PATH = path.join(process.cwd(), 'utils/data/gamedb.json');
+const DATA_PATH = path.join(process.cwd(), 'utils', 'data', 'gamedb.json');
 
 function loadDB() {
-    if (!fs.existsSync(DATA_PATH)) {
+    try {
         fs.ensureDirSync(path.dirname(DATA_PATH));
-        const init = { players: {}, lastUpdated: Date.now() };
-        fs.writeFileSync(DATA_PATH, JSON.stringify(init, null, 2));
-        return init;
+        if (!fs.existsSync(DATA_PATH)) {
+            const init = { players: {}, lastUpdated: 0 };
+            fs.writeFileSync(DATA_PATH, JSON.stringify(init, null, 2));
+            return init;
+        }
+        return JSON.parse(fs.readFileSync(DATA_PATH, 'utf8'));
+    } catch(e) {
+        return { players: {}, lastUpdated: 0 };
     }
-    try { return JSON.parse(fs.readFileSync(DATA_PATH, 'utf8')); }
-    catch(e) { return { players: {}, lastUpdated: Date.now() }; }
 }
 
 function saveDB(db) {
-    db.lastUpdated = Date.now();
-    fs.writeFileSync(DATA_PATH, JSON.stringify(db, null, 2));
+    try {
+        db.lastUpdated = Date.now();
+        fs.writeFileSync(DATA_PATH, JSON.stringify(db, null, 2));
+    } catch(e) { /* silent */ }
 }
 
 function getPlayer(uid) {
@@ -54,14 +57,28 @@ function registerPlayer(uid, name) {
     return { success: true };
 }
 
-function updatePlayer(uid, changes) {
+/**
+ * recordGame — atomic: updates result + coins in ONE read/write
+ * @param {string} uid
+ * @param {'win'|'loss'|'draw'} result
+ * @param {number} coinChange — positive or negative
+ * @returns {{ coins: number }}
+ */
+function recordGame(uid, result, coinChange) {
     const db = loadDB();
     const id = String(uid);
-    if (!db.players[id]) return;
-    Object.assign(db.players[id], changes);
+    if (!db.players[id]) return { coins: 0 };
+    const p = db.players[id];
+    p.gamesPlayed = (p.gamesPlayed || 0) + 1;
+    if      (result === 'win')  p.wins   = (p.wins   || 0) + 1;
+    else if (result === 'loss') p.losses = (p.losses || 0) + 1;
+    else if (result === 'draw') p.draws  = (p.draws  || 0) + 1;
+    p.coins = Math.max(0, (p.coins || 0) + coinChange);
     saveDB(db);
+    return { coins: p.coins };
 }
 
+/** Legacy helpers kept for compatibility */
 function addCoins(uid, amount) {
     const db = loadDB();
     const id = String(uid);
@@ -91,9 +108,7 @@ function getLeaderboard(limit = 10) {
         .slice(0, limit);
 }
 
-function getAllPlayers() {
-    return loadDB().players;
-}
+function getAllPlayers() { return loadDB().players; }
 
 function getTotalPlayers() {
     return Object.values(loadDB().players).filter(p => p.registered).length;
@@ -101,6 +116,6 @@ function getTotalPlayers() {
 
 module.exports = {
     loadDB, saveDB, getPlayer, isRegistered, registerPlayer,
-    updatePlayer, addCoins, recordResult, getLeaderboard,
-    getAllPlayers, getTotalPlayers
+    recordGame, addCoins, recordResult,
+    getLeaderboard, getAllPlayers, getTotalPlayers
 };
