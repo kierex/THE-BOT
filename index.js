@@ -1,5 +1,6 @@
 const { spawn } = require("child_process");
 const http      = require("http");
+const https     = require("https");
 const fs        = require("fs-extra");
 const path      = require("path");
 const url       = require("url");
@@ -9,6 +10,7 @@ const PORT    = process.env.PORT || 5000;
 const WEB_DIR = path.join(__dirname, "web");
 const CMDS_DIR  = path.join(__dirname, "modules/commands");
 const EVTS_DIR  = path.join(__dirname, "modules/events");
+const GAMEDB_PATH = path.join(__dirname, "utils/data/gamedb.json");
 
 const IS_VERCEL     = !!process.env.VERCEL;
 const IS_NETLIFY    = !!process.env.NETLIFY;
@@ -31,7 +33,33 @@ function writeAppstateFromEnv() {
 }
 writeAppstateFromEnv();
 
-// ── SoundCloud init (legacy - kept for compatibility) ─────────────────────────
+// ── Self-ping keep-alive (prevents Render/Railway free tier sleeping) ─────────
+function startKeepAlive() {
+  const deployUrl =
+    process.env.RENDER_EXTERNAL_URL ||
+    process.env.RAILWAY_STATIC_URL  ||
+    process.env.KOYEB_PUBLIC_DOMAIN  ||
+    null;
+
+  if (!deployUrl) return;
+
+  const pingUrl  = deployUrl.replace(/\/$/, '') + '/health';
+  const interval = 13 * 60 * 1000; // 13 minutes — Render sleeps after 15
+
+  setInterval(() => {
+    try {
+      const lib = pingUrl.startsWith('https') ? https : http;
+      lib.get(pingUrl, res => {
+        logger(`Keep-alive ping → ${res.statusCode}`, "[ PING ]");
+      }).on('error', () => {});
+    } catch(e) {}
+  }, interval);
+
+  logger(`Keep-alive started → ${pingUrl} every 13min`, "[ PING ]");
+}
+startKeepAlive();
+
+// ── SoundCloud init (legacy) ──────────────────────────────────────────────────
 let scReady = false;
 async function ensureSC() {
   if (scReady) return;
@@ -44,48 +72,80 @@ async function ensureSC() {
 }
 ensureSC();
 
+// ── Gamedb helpers ─────────────────────────────────────────────────────────────
+function readGameDB() {
+  try {
+    if (!fs.existsSync(GAMEDB_PATH)) return { players: {} };
+    return JSON.parse(fs.readFileSync(GAMEDB_PATH, 'utf8'));
+  } catch(e) { return { players: {} }; }
+}
+
+function getLeaderboard(limit = 20) {
+  const db = readGameDB();
+  return Object.entries(db.players || {})
+    .filter(([, p]) => p.registered)
+    .map(([uid, p]) => ({ uid, ...p }))
+    .sort((a, b) => (b.coins || 0) - (a.coins || 0))
+    .slice(0, limit);
+}
+
+function getGameStats() {
+  const db = readGameDB();
+  const players = Object.values(db.players || {}).filter(p => p.registered);
+  const totalGames  = players.reduce((s, p) => s + (p.gamesPlayed || 0), 0);
+  const totalCoins  = players.reduce((s, p) => s + (p.coins || 0), 0);
+  const totalWins   = players.reduce((s, p) => s + (p.wins || 0), 0);
+  return { totalPlayers: players.length, totalGames, totalCoins, totalWins };
+}
+
 // ── Build file list for dashboard ─────────────────────────────────────────────
 function getBotFiles() {
   const files = [];
   try {
-    const cmdFiles = fs.readdirSync(CMDS_DIR).filter(f => f.endsWith('.js'));
-    for (const f of cmdFiles)
-      files.push({ name: f, path: `modules/commands/${f}`, type: 'command' });
+    fs.readdirSync(CMDS_DIR).filter(f => f.endsWith('.js'))
+      .forEach(f => files.push({ name: f, path: `modules/commands/${f}`, type: 'command' }));
   } catch {}
   try {
-    const evtFiles = fs.readdirSync(EVTS_DIR).filter(f => f.endsWith('.js'));
-    for (const f of evtFiles)
-      files.push({ name: f, path: `modules/events/${f}`, type: 'event' });
+    fs.readdirSync(EVTS_DIR).filter(f => f.endsWith('.js'))
+      .forEach(f => files.push({ name: f, path: `modules/events/${f}`, type: 'event' }));
   } catch {}
-  const rootFiles = ['index.js', 'mirai.js', 'package.json', 'config.json', 'render.yaml', 'railway.toml'];
-  for (const f of rootFiles) {
-    if (fs.existsSync(path.join(__dirname, f)))
-      files.push({ name: f, path: f, type: 'core' });
-  }
+  ['index.js','mirai.js','package.json','config.json','render.yaml','railway.toml']
+    .forEach(f => {
+      if (fs.existsSync(path.join(__dirname, f)))
+        files.push({ name: f, path: f, type: 'core' });
+    });
   return files;
 }
 
-// ── Build command list for dashboard ─────────────────────────────────────────
 function getCommandList() {
   const cmds = [];
   try {
-    const files = fs.readdirSync(CMDS_DIR).filter(f => f.endsWith('.js'));
-    for (const f of files) {
+    fs.readdirSync(CMDS_DIR).filter(f => f.endsWith('.js')).forEach(f => {
       try {
-        const fp  = path.join(CMDS_DIR, f);
-        const mod = require(fp);
-        if (mod?.config) {
-          cmds.push({
-            name:       mod.config.name,
-            category:   mod.config.commandCategory || 'Other',
-            permission: mod.config.hasPermssion ?? 0,
-            description: mod.config.description || ''
-          });
-        }
+        const mod = require(path.join(CMDS_DIR, f));
+        if (mod?.config) cmds.push({
+          name:        mod.config.name,
+          category:    mod.config.commandCategory || 'Other',
+          permission:  mod.config.hasPermssion ?? 0,
+          description: mod.config.description || '',
+          cooldowns:   mod.config.cooldowns || 3,
+        });
       } catch {}
-    }
+    });
   } catch {}
   return cmds;
+}
+
+// ── Serve static web files ────────────────────────────────────────────────────
+function serveStatic(res, filepath, contentType) {
+  try {
+    const data = fs.readFileSync(filepath);
+    res.writeHead(200, { 'Content-Type': contentType });
+    res.end(data);
+  } catch {
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
+    res.end('Not found');
+  }
 }
 
 // ── Web request handler ────────────────────────────────────────────────────────
@@ -97,89 +157,116 @@ async function handleRequest(req, res) {
   res.setHeader("Access-Control-Allow-Origin",  "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-
   if (req.method === "OPTIONS") { res.writeHead(204); return res.end(); }
 
-  // ── GET / → Bot dashboard ──────────────────────────────────────────────────
+  // ── Dashboard ──────────────────────────────────────────────────────────────
   if (pathname === "/" || pathname === "/index.html") {
-    try {
-      const html = fs.readFileSync(path.join(WEB_DIR, "index.html"), "utf8");
-      res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
-      return res.end(html);
-    } catch {
-      res.writeHead(404, { "Content-Type": "text/plain" });
-      return res.end("Not found");
-    }
+    return serveStatic(res, path.join(WEB_DIR, "index.html"), "text/html; charset=utf-8");
   }
 
-  // ── GET /api/status → bot status JSON ─────────────────────────────────────
+  // ── Full bot status ────────────────────────────────────────────────────────
   if (pathname === "/api/status") {
-    const mem    = process.memoryUsage();
-    const cmds   = getCommandList();
-    const files  = getBotFiles();
+    const mem   = process.memoryUsage();
+    const cmds  = getCommandList();
+    const files = getBotFiles();
+    const stats = getGameStats();
+    const cfg   = (() => { try { return require('./config.json'); } catch { return {}; } })();
     res.writeHead(200, { "Content-Type": "application/json" });
     return res.end(JSON.stringify({
       status:       "online",
-      botName:      "Mirai Bot V5",
-      version:      "5.0.0",
+      botName:      cfg.BOTNAME || "THE-BOT V5",
+      adminName:    cfg.ADMIN_NAME || "THE GOAT",
+      version:      cfg.version || "5.0.0",
       team:         "TEAM STARTCOPE BETA",
-      prefix:       "!",
+      prefix:       cfg.PREFIX || "!",
       platform:     IS_SERVERLESS ? (IS_VERCEL ? "vercel" : "netlify") : "persistent",
       node:         process.version,
       uptime:       process.uptime(),
+      uptimeMs:     process.uptime() * 1000,
       memoryMB:     (mem.rss / 1024 / 1024).toFixed(1),
       commandCount: cmds.length,
       fileCount:    files.length,
       commands:     cmds,
       files,
+      gameStats:    stats,
     }));
   }
 
-  // ── GET /api/commands → commands JSON ─────────────────────────────────────
+  // ── Leaderboard ────────────────────────────────────────────────────────────
+  if (pathname === "/api/leaderboard") {
+    const limit = parseInt(query.limit) || 20;
+    const lb    = getLeaderboard(Math.min(limit, 50));
+    res.writeHead(200, { "Content-Type": "application/json" });
+    return res.end(JSON.stringify({ leaderboard: lb, total: lb.length }));
+  }
+
+  // ── All players ────────────────────────────────────────────────────────────
+  if (pathname === "/api/players") {
+    const db      = readGameDB();
+    const players = Object.entries(db.players || {})
+      .filter(([, p]) => p.registered)
+      .map(([uid, p]) => ({
+        uid,
+        name:        p.name,
+        coins:       p.coins || 0,
+        wins:        p.wins || 0,
+        losses:      p.losses || 0,
+        draws:       p.draws || 0,
+        gamesPlayed: p.gamesPlayed || 0,
+        winRate:     p.gamesPlayed > 0 ? ((p.wins / p.gamesPlayed) * 100).toFixed(1) : '0.0',
+      }));
+    res.writeHead(200, { "Content-Type": "application/json" });
+    return res.end(JSON.stringify({ players, total: players.length }));
+  }
+
+  // ── Game DB stats ──────────────────────────────────────────────────────────
+  if (pathname === "/api/gamedb") {
+    const stats = getGameStats();
+    const lb    = getLeaderboard(10);
+    res.writeHead(200, { "Content-Type": "application/json" });
+    return res.end(JSON.stringify({ stats, leaderboard: lb }));
+  }
+
+  // ── Commands only ──────────────────────────────────────────────────────────
   if (pathname === "/api/commands") {
     res.writeHead(200, { "Content-Type": "application/json" });
     return res.end(JSON.stringify({ commands: getCommandList() }));
   }
 
-  // ── GET /health → legacy health check ─────────────────────────────────────
+  // ── Health check ──────────────────────────────────────────────────────────
   if (pathname === "/health") {
     res.writeHead(200, { "Content-Type": "application/json" });
     return res.end(JSON.stringify({
-      status:  "online",
-      uptime:  process.uptime(),
-      bot:     "Mirai Bot V5",
-      team:    "TEAM STARTCOPE BETA",
+      status: "online", uptime: process.uptime(), bot: "THE-BOT V5", team: "TEAM STARTCOPE BETA"
     }));
   }
 
-  // ── GET /api/search?q=... → SoundCloud search (kept for compatibility) ─────
+  // ── SoundCloud search ──────────────────────────────────────────────────────
   if (pathname === "/api/search") {
     const q = query.q;
-    if (!q) { res.writeHead(400, {"Content-Type":"application/json"}); return res.end(JSON.stringify({error:"Missing q"})); }
+    if (!q) { res.writeHead(400); return res.end(JSON.stringify({error:"Missing q"})); }
     try {
       await ensureSC();
       const play    = require("play-dl");
       const results = await play.search(q, { source: { soundcloud: "tracks" }, limit: 10 });
       const mapped  = results.map(r => ({
-        title:     r.name || "Unknown",
-        url:       r.url,
-        duration:  r.durationInSec || 0,
+        title: r.name || "Unknown", url: r.url,
+        duration: r.durationInSec || 0,
         thumbnail: r.thumbnails?.[0]?.url || "",
-        artist:    r.user?.name || "Unknown",
+        artist: r.user?.name || "Unknown",
       }));
       res.writeHead(200, { "Content-Type": "application/json" });
       return res.end(JSON.stringify({ results: mapped }));
     } catch(e) {
-      res.writeHead(500, { "Content-Type": "application/json" });
-      return res.end(JSON.stringify({ error: e.message }));
+      res.writeHead(500); return res.end(JSON.stringify({ error: e.message }));
     }
   }
 
-  // ── GET /api/download → audio download ────────────────────────────────────
+  // ── Audio download ─────────────────────────────────────────────────────────
   if (pathname === "/api/download") {
     const trackUrl = query.url;
     const title    = (query.title || "audio").replace(/[^\w\s\-]/g, "").trim();
-    if (!trackUrl) { res.writeHead(400,{"Content-Type":"text/plain"}); return res.end("Missing url"); }
+    if (!trackUrl) { res.writeHead(400); return res.end("Missing url"); }
     try {
       await ensureSC();
       const play = require("play-dl");
@@ -192,10 +279,7 @@ async function handleRequest(req, res) {
       info.stream.pipe(res);
       req.on("close", () => { try { info.stream.destroy(); } catch {} });
     } catch(e) {
-      if (!res.headersSent) {
-        res.writeHead(500, {"Content-Type":"application/json"});
-        res.end(JSON.stringify({ error: e.message }));
-      }
+      if (!res.headersSent) { res.writeHead(500); res.end(JSON.stringify({ error: e.message })); }
     }
     return;
   }
@@ -206,10 +290,7 @@ async function handleRequest(req, res) {
 
 const server = http.createServer((req, res) => {
   handleRequest(req, res).catch(err => {
-    if (!res.headersSent) {
-      res.writeHead(500, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ error: err.message }));
-    }
+    if (!res.headersSent) { res.writeHead(500); res.end(JSON.stringify({ error: err.message })); }
   });
 });
 
@@ -219,23 +300,27 @@ server.on("error", err => {
 });
 
 server.listen(PORT, "0.0.0.0", () => {
-  logger(`Web dashboard running on port ${PORT}`, "[ SERVER ]");
-  if (IS_SERVERLESS) logger("Serverless mode — web only (no bot)", "[ SERVER ]");
+  logger(`Web dashboard → http://0.0.0.0:${PORT}`, "[ SERVER ]");
+  logger(`Endpoints: / | /health | /api/status | /api/leaderboard | /api/players`, "[ SERVER ]");
+  if (IS_SERVERLESS) logger("Serverless mode — web only", "[ SERVER ]");
 });
 
 // ── Bot process (persistent platforms only) ───────────────────────────────────
 function startBot(message) {
-  if (message) logger(message, "[ Starting ]");
+  if (message) logger(message, "[ BOT ]");
   const child = spawn("node", ["--trace-warnings", "--async-stack-traces", "mirai.js"], {
     cwd: __dirname, stdio: "inherit", shell: true
   });
   child.on("close", code => {
-    if (code !== 0 || (global.countRestart && global.countRestart < 5)) {
-      global.countRestart = (global.countRestart || 0) + 1;
-      startBot("Restarting...");
+    logger(`Bot exited (code ${code}) — restarting in 5s...`, "[ BOT ]");
+    global.countRestart = (global.countRestart || 0) + 1;
+    if (global.countRestart <= 10) {
+      setTimeout(() => startBot("Restarting bot..."), 5000);
+    } else {
+      logger("Max restarts reached — manual intervention needed.", "[ BOT ]");
     }
   });
-  child.on("error", err => logger("Error: " + JSON.stringify(err), "[ Starting ]"));
+  child.on("error", err => logger("Spawn error: " + err.message, "[ BOT ]"));
 }
 
 if (!IS_SERVERLESS) startBot();
