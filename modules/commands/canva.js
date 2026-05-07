@@ -16,7 +16,7 @@ const fs     = require('fs-extra');
 const path   = require('path');
 const bold   = require('../../utils/bold');
 
-const TEAM     = 'TEAM STARTCOPE BETA';
+const TEAM     = 'TEAM THE BOT';
 const TEMP_DIR = path.join(process.cwd(), 'utils/data/canva_temp');
 fs.ensureDirSync(TEMP_DIR);
 
