@@ -1,239 +1,316 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MIRAI — Free Music Search & Download</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mirai Bot V5 — TEAM STARTCOPE BETA</title>
   <style>
     :root {
-      --green: #1db954;
-      --dark: #0d0d0d;
-      --card: #181818;
-      --card2: #242424;
-      --sub: #b3b3b3;
-      --radius: 10px;
+      --bg: #0a0a0f;
+      --card: #12121a;
+      --card2: #1a1a28;
+      --border: #2a2a40;
+      --accent: #7c3aed;
+      --accent2: #a855f7;
+      --green: #22c55e;
+      --yellow: #facc15;
+      --red: #ef4444;
+      --blue: #3b82f6;
+      --text: #e2e8f0;
+      --sub: #94a3b8;
+      --radius: 12px;
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: var(--dark); color: #fff; font-family: 'Segoe UI', Tahoma, sans-serif; min-height: 100vh; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background:var(--bg); color:var(--text); font-family:'Segoe UI',system-ui,sans-serif; min-height:100vh; }
 
     /* HEADER */
     header {
-      background: linear-gradient(135deg, #1db954 0%, #1565c0 45%, #6a0dad 100%);
-      padding: 50px 20px 80px;
+      background: linear-gradient(135deg, #1e003e 0%, #0d0d1a 40%, #001a3e 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 40px 20px 32px;
       text-align: center;
       position: relative;
       overflow: hidden;
     }
-    header::after {
+    header::before {
       content: '';
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      height: 60px;
-      background: linear-gradient(to bottom, transparent, var(--dark));
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(124,58,237,0.25) 0%, transparent 70%);
+      pointer-events: none;
     }
-    .logo { font-size: 64px; font-weight: 900; letter-spacing: -2px; text-shadow: 0 4px 24px rgba(0,0,0,0.4); }
-    .tagline { font-size: 13px; letter-spacing: 5px; color: rgba(255,255,255,0.9); margin-top: 8px; font-weight: 700; text-transform: uppercase; }
-    .badge { display: inline-block; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 20px; padding: 4px 14px; font-size: 11px; margin-top: 10px; letter-spacing: 2px; }
+    .bot-icon { font-size: 56px; line-height: 1; margin-bottom: 12px; }
+    .bot-title { font-size: 32px; font-weight: 900; letter-spacing: -1px; }
+    .bot-title span { color: var(--accent2); }
+    .bot-team { font-size: 11px; letter-spacing: 4px; color: var(--sub); margin-top: 6px; text-transform: uppercase; }
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.4);
+      border-radius: 20px; padding: 5px 14px; font-size: 12px;
+      color: var(--green); font-weight: 600; margin-top: 14px;
+    }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
 
-    /* SEARCH */
-    .search-wrap {
-      max-width: 680px;
-      margin: -28px auto 36px;
-      padding: 0 20px;
-      position: relative;
-      z-index: 10;
-    }
-    .search-box {
-      display: flex;
-      background: #fff;
-      border-radius: 50px;
-      overflow: hidden;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-    }
-    .search-box input {
-      flex: 1;
-      padding: 18px 24px;
-      border: none;
-      outline: none;
-      font-size: 16px;
-      color: #111;
-      background: transparent;
-    }
-    .search-box button {
-      padding: 0 28px;
-      background: var(--green);
-      border: none;
-      color: #fff;
-      font-size: 14px;
-      font-weight: 800;
-      cursor: pointer;
-      letter-spacing: 1px;
-      transition: background 0.2s;
-    }
-    .search-box button:hover { background: #1ed760; }
-    .search-box button:disabled { background: #444; cursor: not-allowed; }
+    /* MAIN */
+    main { max-width: 960px; margin: 0 auto; padding: 28px 16px 80px; }
 
-    /* RESULTS */
-    .results-wrap { max-width: 860px; margin: 0 auto; padding: 0 20px 80px; }
-    .section-label { font-size: 11px; letter-spacing: 3px; color: var(--sub); font-weight: 700; text-transform: uppercase; margin-bottom: 16px; }
-
-    .track-list { display: flex; flex-direction: column; gap: 6px; }
-    .track-card {
-      background: var(--card);
-      border-radius: var(--radius);
-      padding: 12px 16px;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      transition: background 0.2s;
+    /* STAT CARDS */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 12px; margin-bottom: 28px; }
+    .stat-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 18px 16px; text-align: center;
     }
-    .track-card:hover { background: var(--card2); }
-    .track-num { width: 22px; text-align: center; color: var(--sub); font-size: 14px; flex-shrink: 0; }
-    .track-thumb {
-      width: 52px; height: 52px;
-      border-radius: 6px;
-      object-fit: cover;
-      flex-shrink: 0;
-      background: #333;
+    .stat-icon { font-size: 28px; margin-bottom: 8px; }
+    .stat-value { font-size: 22px; font-weight: 800; color: var(--accent2); }
+    .stat-label { font-size: 11px; color: var(--sub); margin-top: 3px; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* SECTION */
+    .section { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 20px; overflow: hidden; }
+    .section-header {
+      padding: 14px 18px; border-bottom: 1px solid var(--border);
+      font-size: 13px; font-weight: 700; letter-spacing: 1.5px;
+      text-transform: uppercase; color: var(--accent2);
+      display: flex; align-items: center; gap: 8px;
     }
-    .thumb-placeholder { width: 52px; height: 52px; border-radius: 6px; background: #2a2a2a; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
-    .track-info { flex: 1; min-width: 0; }
-    .track-title { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .track-artist { font-size: 13px; color: var(--sub); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .track-dur { color: var(--sub); font-size: 13px; flex-shrink: 0; min-width: 44px; text-align: right; }
-    .dl-btn {
-      padding: 8px 18px;
-      background: var(--green);
-      border: none;
-      border-radius: 20px;
-      color: #fff;
-      font-size: 12px;
-      font-weight: 800;
-      cursor: pointer;
-      flex-shrink: 0;
-      transition: all 0.2s;
-      letter-spacing: 0.5px;
+    .section-body { padding: 16px 18px; }
+
+    /* CMD LIST */
+    .cmd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap: 8px; }
+    .cmd-item {
+      background: var(--card2); border: 1px solid var(--border); border-radius: 8px;
+      padding: 10px 12px;
     }
-    .dl-btn:hover { background: #1ed760; transform: scale(1.05); }
-    .dl-btn:disabled { background: #444; cursor: not-allowed; transform: none; }
+    .cmd-name { font-weight: 700; font-size: 14px; color: var(--accent2); }
+    .cmd-cat { font-size: 11px; color: var(--sub); margin-top: 2px; }
+    .cmd-perm { display: inline-block; font-size: 10px; border-radius: 4px; padding: 1px 6px; margin-top: 4px; }
+    .perm-0 { background:rgba(34,197,94,.15); color:var(--green); }
+    .perm-2 { background:rgba(124,58,237,.2); color:var(--accent2); }
 
-    /* STATES */
-    .state { text-align: center; padding: 60px 20px; color: var(--sub); }
-    .state-icon { font-size: 52px; margin-bottom: 14px; }
-    .state-title { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 6px; }
-    .state-sub { font-size: 14px; }
-    .spinner { width: 36px; height: 36px; border: 3px solid #2a2a2a; border-top-color: var(--green); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 16px; }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    /* FILES LIST */
+    .file-list { display: flex; flex-direction: column; gap: 6px; }
+    .file-item {
+      background: var(--card2); border: 1px solid var(--border); border-radius: 8px;
+      padding: 10px 14px; display: flex; align-items: center; gap: 10px;
+    }
+    .file-icon { font-size: 18px; flex-shrink: 0; }
+    .file-name { font-size: 13px; font-weight: 600; color: var(--text); }
+    .file-path { font-size: 11px; color: var(--sub); }
 
-    /* FOOTER */
-    footer { text-align: center; padding: 16px; color: #444; font-size: 11px; letter-spacing: 1px; border-top: 1px solid #1a1a1a; }
+    /* DEPLOY */
+    .deploy-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap: 12px; }
+    .deploy-card {
+      background: var(--card2); border: 1px solid var(--border); border-radius: 10px;
+      padding: 16px;
+    }
+    .deploy-name { font-weight: 700; font-size: 15px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+    .deploy-step { font-size: 12px; color: var(--sub); margin: 4px 0; padding-left: 12px; border-left: 2px solid var(--border); }
+    .deploy-step.active { border-left-color: var(--accent2); color: var(--text); }
+    .tag { font-size: 10px; border-radius: 4px; padding: 2px 7px; font-weight: 600; }
+    .tag-green { background:rgba(34,197,94,.15); color:var(--green); }
+    .tag-blue  { background:rgba(59,130,246,.15); color:var(--blue); }
+    .tag-purple{ background:rgba(124,58,237,.2); color:var(--accent2); }
 
-    @media (max-width: 560px) {
-      .logo { font-size: 44px; }
-      .track-dur { display: none; }
-      .dl-btn { padding: 7px 12px; font-size: 11px; }
-      .track-num { display: none; }
+    /* LOADING */
+    .loading { text-align:center; padding:30px; color:var(--sub); }
+    .spinner { width:28px; height:28px; border:3px solid var(--border); border-top-color:var(--accent2);
+               border-radius:50%; animation:spin .8s linear infinite; margin:0 auto 10px; }
+    @keyframes spin { to{ transform:rotate(360deg); } }
+
+    /* UPTIME */
+    #uptimeVal { color:var(--green); font-weight:700; }
+    #pingVal   { color:var(--yellow); font-weight:700; }
+
+    footer { text-align:center; padding:16px; color:var(--sub); font-size:11px; border-top:1px solid var(--border); letter-spacing:1px; }
+
+    @media(max-width:560px) {
+      .bot-title { font-size:24px; }
+      .stats-grid { grid-template-columns: repeat(2,1fr); }
+      .cmd-grid   { grid-template-columns: repeat(2,1fr); }
     }
   </style>
 </head>
 <body>
 
 <header>
-  <div class="logo">🎵 MIRAI</div>
-  <div class="tagline">Spotify Free — Search + Download</div>
-  <div class="badge">📻 HOME RADIO 95.1 NAGA · MOR NAGA · ONLINE LIVE</div>
+  <div class="bot-icon">🤖</div>
+  <div class="bot-title">MIRAI BOT <span>V5</span></div>
+  <div class="bot-team">⚡ TEAM STARTCOPE BETA ⚡</div>
+  <div class="status-badge"><div class="dot"></div> <span id="statusText">Checking...</span></div>
 </header>
 
-<div class="search-wrap">
-  <div class="search-box">
-    <input type="text" id="q" placeholder="Search songs, artists, albums..." autocomplete="off" />
-    <button id="searchBtn" onclick="doSearch()">🔍 SEARCH</button>
-  </div>
-</div>
+<main>
 
-<div class="results-wrap">
-  <div id="label" class="section-label" style="display:none"></div>
-  <div id="results">
-    <div class="state">
-      <div class="state-icon">🎵</div>
-      <div class="state-title">MIRAI Music Search</div>
-      <div class="state-sub">Type a song or artist name above and press Search</div>
+  <!-- STAT CARDS -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">⏱️</div>
+      <div class="stat-value" id="uptimeVal">—</div>
+      <div class="stat-label">Uptime</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">📦</div>
+      <div class="stat-value" id="cmdCount">—</div>
+      <div class="stat-label">Commands</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">⚡</div>
+      <div class="stat-value" id="pingVal">—</div>
+      <div class="stat-label">Response</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">💾</div>
+      <div class="stat-value" id="memVal">—</div>
+      <div class="stat-label">Memory</div>
     </div>
   </div>
-</div>
 
-<footer>MIRAI BOT V3 · TEAM STARTCOPE BETA · HOME RADIO 95.1 NAGA 2026</footer>
+  <!-- COMMANDS -->
+  <div class="section">
+    <div class="section-header">📋 Commands</div>
+    <div class="section-body">
+      <div id="cmdGrid" class="cmd-grid">
+        <div class="loading"><div class="spinner"></div>Loading commands...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILES -->
+  <div class="section">
+    <div class="section-header">📁 Bot Files</div>
+    <div class="section-body">
+      <div id="filesList" class="file-list">
+        <div class="loading"><div class="spinner"></div>Loading files...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DEPLOYMENT -->
+  <div class="section">
+    <div class="section-header">🚀 Deployment Info</div>
+    <div class="section-body">
+      <div class="deploy-grid">
+        <div class="deploy-card">
+          <div class="deploy-name">🟢 Render <span class="tag tag-green">RECOMMENDED</span></div>
+          <div class="deploy-step active">1. Go to render.com → New → Background Worker</div>
+          <div class="deploy-step active">2. Connect iop2026/THE-BOT repo</div>
+          <div class="deploy-step active">3. Build: npm install | Start: node index.js</div>
+          <div class="deploy-step active">4. Add env: APPSTATE = &lt;appstate.json contents&gt;</div>
+          <div class="deploy-step active">5. Region: Singapore | Plan: Free</div>
+        </div>
+        <div class="deploy-card">
+          <div class="deploy-name">🔵 Railway <span class="tag tag-blue">FAST</span></div>
+          <div class="deploy-step active">1. Go to railway.app → New Project</div>
+          <div class="deploy-step active">2. Deploy from GitHub → iop2026/THE-BOT</div>
+          <div class="deploy-step active">3. railway.toml auto-configures build</div>
+          <div class="deploy-step active">4. Add env: APPSTATE = &lt;appstate.json contents&gt;</div>
+        </div>
+        <div class="deploy-card">
+          <div class="deploy-name">🟣 Vercel <span class="tag tag-purple">WEB ONLY</span></div>
+          <div class="deploy-step">1. Serverless — web dashboard only</div>
+          <div class="deploy-step">2. Bot messaging disabled on Vercel</div>
+          <div class="deploy-step active">3. Use Render/Railway for full bot</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOT INFO -->
+  <div class="section">
+    <div class="section-header">ℹ️ Bot Info</div>
+    <div class="section-body">
+      <div id="botInfo" class="file-list">
+        <div class="loading"><div class="spinner"></div>Loading...</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>MIRAI BOT V5 · TEAM STARTCOPE BETA · 2026</footer>
 
 <script>
-  const qEl = document.getElementById('q');
-  const resultsEl = document.getElementById('results');
-  const labelEl = document.getElementById('label');
-  const btn = document.getElementById('searchBtn');
+const CATS = { Admin:'🛡️', Games:'🎮', General:'📋', AI:'🤖', Group:'👥', Other:'📦' };
+const PERMS = { 0:'Member', 1:'Group Admin', 2:'Bot Admin', 3:'Owner' };
 
-  qEl.addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+function fmtUptime(sec) {
+  const d = Math.floor(sec/86400), h = Math.floor((sec%86400)/3600),
+        m = Math.floor((sec%3600)/60), s = Math.floor(sec%60);
+  if (d>0) return `${d}d ${h}h ${m}m`;
+  if (h>0) return `${h}h ${m}m ${s}s`;
+  return `${m}m ${s}s`;
+}
 
-  function fmtDur(s) {
-    if (!s) return '--:--';
-    return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
-  }
-  function esc(s) {
-    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-  }
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
 
-  async function doSearch() {
-    const q = qEl.value.trim();
-    if (!q) return;
-    btn.disabled = true;
-    btn.textContent = '⏳ ...';
-    labelEl.style.display = 'none';
-    resultsEl.innerHTML = `<div class="state"><div class="spinner"></div><div class="state-sub">Searching for "${esc(q)}"...</div></div>`;
+async function fetchStatus() {
+  const t0 = Date.now();
+  try {
+    const res  = await fetch('/api/status');
+    const ping = Date.now() - t0;
+    const data = await res.json();
 
-    try {
-      const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      if (!data.results || !data.results.length) {
-        resultsEl.innerHTML = `<div class="state"><div class="state-icon">😔</div><div class="state-title">No results</div><div class="state-sub">Try a different search</div></div>`;
-        labelEl.style.display = 'none';
-      } else {
-        labelEl.textContent = `${data.results.length} results for "${q}"`;
-        labelEl.style.display = 'block';
-        resultsEl.innerHTML = `<div class="track-list">${data.results.map((r,i) => `
-          <div class="track-card">
-            <div class="track-num">${i+1}</div>
-            ${r.thumbnail
-              ? `<img class="track-thumb" src="${esc(r.thumbnail)}" alt="" onerror="this.outerHTML='<div class=\\'thumb-placeholder\\'>🎵</div>'" />`
-              : `<div class="thumb-placeholder">🎵</div>`}
-            <div class="track-info">
-              <div class="track-title">${esc(r.title)}</div>
-              <div class="track-artist">${esc(r.artist)}</div>
-            </div>
-            <div class="track-dur">${fmtDur(r.duration)}</div>
-            <button class="dl-btn" onclick="dlTrack(this,'${encodeURIComponent(r.url)}','${encodeURIComponent(r.title)}')">⬇ DOWNLOAD</button>
-          </div>`).join('')}</div>`;
-      }
-    } catch(e) {
-      resultsEl.innerHTML = `<div class="state"><div class="state-icon">❌</div><div class="state-title">Error</div><div class="state-sub">${esc(e.message)}</div></div>`;
-    } finally {
-      btn.disabled = false;
-      btn.textContent = '🔍 SEARCH';
+    document.getElementById('statusText').textContent = 'Online — Bot Active';
+    document.getElementById('uptimeVal').textContent  = fmtUptime(data.uptime || 0);
+    document.getElementById('cmdCount').textContent   = data.commandCount || 0;
+    document.getElementById('pingVal').textContent    = ping + 'ms';
+    document.getElementById('memVal').textContent     = (data.memoryMB || 0) + ' MB';
+
+    // Commands
+    const cmds = data.commands || [];
+    if (cmds.length) {
+      document.getElementById('cmdGrid').innerHTML = cmds.map(c => `
+        <div class="cmd-item">
+          <div class="cmd-name">${esc(data.prefix||'!')}${esc(c.name)}</div>
+          <div class="cmd-cat">${CATS[c.category]||'📦'} ${esc(c.category)}</div>
+          <span class="cmd-perm perm-${c.permission}">${esc(PERMS[c.permission]||'Member')}</span>
+        </div>
+      `).join('');
+    } else {
+      document.getElementById('cmdGrid').innerHTML = '<div style="color:var(--sub);font-size:13px">No commands loaded.</div>';
     }
-  }
 
-  function dlTrack(btn, encUrl, encTitle) {
-    btn.disabled = true;
-    btn.textContent = '⏳ ...';
-    const a = document.createElement('a');
-    a.href = `/api/download?url=${encUrl}&title=${encTitle}`;
-    a.download = `${decodeURIComponent(encTitle)}.mp3`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => {
-      btn.disabled = false;
-      btn.textContent = '⬇ DOWNLOAD';
-    }, 3000);
+    // Files
+    const files = data.files || [];
+    if (files.length) {
+      document.getElementById('filesList').innerHTML = files.map(f => `
+        <div class="file-item">
+          <div class="file-icon">${f.type==='command'?'⚡':f.type==='event'?'📡':'📄'}</div>
+          <div>
+            <div class="file-name">${esc(f.name)}</div>
+            <div class="file-path">${esc(f.path)}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Bot info
+    document.getElementById('botInfo').innerHTML = `
+      <div class="file-item"><div class="file-icon">🤖</div><div><div class="file-name">Bot Name</div><div class="file-path">${esc(data.botName)}</div></div></div>
+      <div class="file-item"><div class="file-icon">📦</div><div><div class="file-name">Version</div><div class="file-path">${esc(data.version)}</div></div></div>
+      <div class="file-item"><div class="file-icon">⌨️</div><div><div class="file-name">Prefix</div><div class="file-path">${esc(data.prefix)}</div></div></div>
+      <div class="file-item"><div class="file-icon">🌐</div><div><div class="file-name">Node.js</div><div class="file-path">${esc(data.node)}</div></div></div>
+      <div class="file-item"><div class="file-icon">🚀</div><div><div class="file-name">Platform</div><div class="file-path">${esc(data.platform)}</div></div></div>
+      <div class="file-item"><div class="file-icon">👑</div><div><div class="file-name">Team</div><div class="file-path">TEAM STARTCOPE BETA</div></div></div>
+    `;
+  } catch(e) {
+    document.getElementById('statusText').textContent = 'Checking connection...';
+    document.getElementById('pingVal').textContent    = 'N/A';
   }
+}
+
+// Poll every 30s
+fetchStatus();
+setInterval(fetchStatus, 30000);
+
+// Live uptime counter
+setInterval(() => {
+  const el  = document.getElementById('uptimeVal');
+  const txt = el.textContent;
+  const sec = parseInt(txt);
+  if (!isNaN(sec)) el.textContent = fmtUptime(sec + 30);
+}, 30000);
 </script>
 </body>
 </html>
