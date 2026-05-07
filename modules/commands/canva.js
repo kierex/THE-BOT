@@ -105,7 +105,7 @@ module.exports.run = async function ({ api, event, args }) {
     return api.sendMessage(
       `╔══════════════════════════════════╗\n` +
       `║  🎨 ${bold('CANVA AI')} — ${bold('DESIGN STUDIO')} ║\n` +
-      `║  ⚡ ${bold('TEAM STARTCOPE BETA')}      ║\n` +
+      `║  ⚡ ${bold('TEAM THE BOR')}      ║\n` +
       `╚══════════════════════════════════╝\n\n` +
       `✨ ${bold('Free AI Design Generator!')}\n` +
       `💡 ${bold('Reply to any canva image to update it!')}\n\n` +
