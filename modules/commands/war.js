@@ -74,7 +74,7 @@ module.exports.run = async function ({ api, event, args }) {
             `😤 TAKOT KA BA? DUWAG! DUWAG! DUWAG!\n` +
             `⚡ PAKITANG GILAS MO KUNG MATAPANG KA!\n` +
             `🌪️ WALANG TATALO SAKIN DITO! HARAP NA! 💥\n\n` +
-            `⚔️ — ${bold('TEAM STARTCOPE BETA')} — ⚔️`;
+            `⚔️ — ${bold('SLAPSOIL')} — ⚔️`;
         return api.sendMessage(taunt, threadID, messageID);
     }
 
