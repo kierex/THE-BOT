@@ -1,18 +1,20 @@
 /**
- * rps.js — Rock Paper Scissors / Bato Bato Pick Game
- * Laro ng bato-bato-pick laban sa bot!
+ * rps.js — Bato-Bato-Pick (with game database)
+ * Laro ng bato-bato-pick laban sa bot! Win coins!
  * TEAM STARTCOPE BETA
  */
-
 const bold = require('../../utils/bold');
+const gdb  = require('../../utils/gamedb');
 
 const CHOICES = {
-    bato: { emoji: '🪨', beats: 'gunting', tagalog: 'bato', alt: ['rock', 'bato', '1', '🪨'] },
-    papel: { emoji: '📄', beats: 'bato', tagalog: 'papel', alt: ['paper', 'papel', '2', '📄'] },
-    gunting: { emoji: '✂️', beats: 'papel', tagalog: 'gunting', alt: ['scissors', 'gunting', '3', '✂️'] },
+    bato:    { emoji: '🪨', beats: 'gunting', tagalog: 'bato',    alt: ['rock','bato','1','🪨'] },
+    papel:   { emoji: '📄', beats: 'bato',    tagalog: 'papel',   alt: ['paper','papel','2','📄'] },
+    gunting: { emoji: '✂️', beats: 'papel',   tagalog: 'gunting', alt: ['scissors','gunting','3','✂️'] },
 };
 
-const SCORES = new Map();
+const WIN_COINS  = 50;
+const LOSS_COINS = -20;
+const DRAW_COINS = 5;
 
 function getKey(input) {
     input = input.toLowerCase().trim();
@@ -22,102 +24,98 @@ function getKey(input) {
     return null;
 }
 
-function getScore(uid) {
-    return SCORES.get(uid) || { wins: 0, losses: 0, draws: 0 };
-}
-
 module.exports.config = {
-    name: 'rps',
-    version: '1.0.0',
-    hasPermssion: 2,
-    credits: 'TEAM STARTCOPE BETA',
-    description: 'Bato-Bato-Pick laban sa bot! Rock Paper Scissors game.',
+    name:            'rps',
+    version:         '2.0.0',
+    hasPermssion:    0,
+    credits:         'TEAM STARTCOPE BETA',
+    description:     'Bato-Bato-Pick laban sa bot! Mag-register at manalo ng coins!',
     commandCategory: 'Games',
-    usages: 'rps [bato/papel/gunting] | rps score',
-    cooldowns: 3,
+    usages:          'rps [bato/papel/gunting] | rps score',
+    cooldowns:       3,
 };
 
 module.exports.run = async function ({ api, event, args }) {
     const { threadID, messageID, senderID } = event;
+    const P = global.config.PREFIX;
 
-    if (!args[0]) {
+    if (args[0]?.toLowerCase() === 'score') {
+        if (!gdb.isRegistered(senderID)) {
+            return api.sendMessage(
+                `❌ ${bold('Hindi ka pa registered!')}\n` +
+                `💡 ${P}register para makita ang score.`,
+                threadID, messageID
+            );
+        }
+        const p  = gdb.getPlayer(senderID);
+        const wr = p.gamesPlayed > 0 ? ((p.wins / p.gamesPlayed) * 100).toFixed(1) : '0.0';
         return api.sendMessage(
-            `╔══════════════════════╗\n` +
-            `║  ✂️ ${bold('BATO-BATO-PICK!')} ║\n` +
-            `╚══════════════════════╝\n\n` +
-            `🪨 ${bold('1 / bato')} — Bato\n` +
-            `📄 ${bold('2 / papel')} — Papel\n` +
-            `✂️ ${bold('3 / gunting')} — Gunting\n\n` +
-            `📌 ${bold('Paano maglaro:')}\n` +
-            `${global.config.PREFIX}rps bato\n` +
-            `${global.config.PREFIX}rps papel\n` +
-            `${global.config.PREFIX}rps gunting\n\n` +
-            `📊 ${global.config.PREFIX}rps score — tingnan ang score`,
+            `╔══════════════════════╗\n║  📊 ${bold('RPS SCORECARD')}  ║\n╚══════════════════════╝\n\n` +
+            `👤 ${bold(p.name)}\n` +
+            `💰 ${bold('Coins:')} ${p.coins.toLocaleString()}\n` +
+            `✅ ${bold('Wins:')} ${p.wins} | ❌ ${bold('Losses:')} ${p.losses} | 🤝 ${bold('Draws:')} ${p.draws}\n` +
+            `📊 ${bold('Win Rate:')} ${wr}%\n\n` +
+            `🏅 ${P}rich — leaderboard`,
             threadID, messageID
         );
     }
 
-    if (args[0].toLowerCase() === 'score') {
-        const s = getScore(senderID);
-        const total = s.wins + s.losses + s.draws;
-        const winRate = total > 0 ? ((s.wins / total) * 100).toFixed(1) : '0.0';
+    if (!gdb.isRegistered(senderID)) {
         return api.sendMessage(
-            `╔══════════════════════╗\n` +
-            `║  📊 ${bold('RPS SCORECARD')}  ║\n` +
-            `╚══════════════════════╝\n\n` +
-            `✅ ${bold('Wins:')} ${s.wins}\n` +
-            `❌ ${bold('Losses:')} ${s.losses}\n` +
-            `🤝 ${bold('Draws:')} ${s.draws}\n` +
-            `📊 ${bold('Win Rate:')} ${winRate}%\n\n` +
-            `💡 ${global.config.PREFIX}rps [bato/papel/gunting] para maglaro!`,
+            `╔══════════════════════╗\n║  🪨 ${bold('BATO-BATO-PICK!')} ║\n╚══════════════════════╝\n\n` +
+            `❌ ${bold('Kailangan mag-register muna!')}\n\n` +
+            `💡 I-type: ${P}register\n` +
+            `✅ Makakakuha ka ng 100 starting coins!\n` +
+            `🎮 Pagkatapos ay pwede ka nang maglaro!`,
+            threadID, messageID
+        );
+    }
+
+    if (!args[0]) {
+        const p = gdb.getPlayer(senderID);
+        return api.sendMessage(
+            `╔══════════════════════╗\n║  🪨 ${bold('BATO-BATO-PICK!')} ║\n╚══════════════════════╝\n\n` +
+            `💰 ${bold('Your coins:')} ${p.coins.toLocaleString()}\n\n` +
+            `🪨 bato (1)  📄 papel (2)  ✂️ gunting (3)\n\n` +
+            `🏆 Win: +${WIN_COINS} coins | ❌ Loss: ${LOSS_COINS} coins | 🤝 Draw: +${DRAW_COINS} coins\n\n` +
+            `💡 ${P}rps bato / papel / gunting`,
             threadID, messageID
         );
     }
 
     const playerKey = getKey(args[0]);
     if (!playerKey) {
-        return api.sendMessage(
-            `❎ ${bold('Mali ang input!')}\n\n` +
-            `✅ Gamitin: bato, papel, o gunting\n` +
-            `💡 Example: ${global.config.PREFIX}rps bato`,
-            threadID, messageID
-        );
+        return api.sendMessage(`❎ ${bold('Mali!')} Gamitin: bato, papel, o gunting`, threadID, messageID);
     }
 
-    const botKeys = Object.keys(CHOICES);
-    const botKey = botKeys[Math.floor(Math.random() * botKeys.length)];
+    const botKey = Object.keys(CHOICES)[Math.floor(Math.random() * 3)];
     const player = CHOICES[playerKey];
-    const bot = CHOICES[botKey];
-    const score = getScore(senderID);
+    const bot    = CHOICES[botKey];
 
-    let result, resultMsg;
+    let result, resultMsg, coinChange;
     if (playerKey === botKey) {
-        result = 'draw';
-        score.draws++;
-        resultMsg = `🤝 ${bold('DRAW! Pareho kayo!')}`;
+        result = 'draw'; resultMsg = `🤝 ${bold('DRAW! Pareho kayo!')}`; coinChange = DRAW_COINS;
     } else if (player.beats === botKey) {
-        result = 'win';
-        score.wins++;
-        resultMsg = `🎉 ${bold('NANALO KA! Ang galing mo!')}`;
+        result = 'win';  resultMsg = `🎉 ${bold('NANALO KA!')}`; coinChange = WIN_COINS;
     } else {
-        result = 'loss';
-        score.losses++;
-        resultMsg = `😅 ${bold('NATALO KA! Bot wins!')}`;
+        result = 'loss'; resultMsg = `😅 ${bold('NATALO KA! Bot wins!')}`; coinChange = LOSS_COINS;
     }
 
-    SCORES.set(senderID, score);
+    gdb.recordResult(senderID, result);
+    const newCoins = gdb.addCoins(senderID, coinChange);
+    const p        = gdb.getPlayer(senderID);
+    const wr       = p.gamesPlayed > 0 ? ((p.wins / p.gamesPlayed) * 100).toFixed(1) : '0.0';
 
     return api.sendMessage(
-        `╔══════════════════════╗\n` +
-        `║  ✂️ ${bold('BATO-BATO-PICK!')} ║\n` +
-        `╚══════════════════════╝\n\n` +
+        `╔══════════════════════╗\n║  🪨 ${bold('BATO-BATO-PICK!')} ║\n╚══════════════════════╝\n\n` +
         `👤 ${bold('Ikaw:')} ${player.emoji} ${player.tagalog.toUpperCase()}\n` +
         `🤖 ${bold('Bot:')} ${bot.emoji} ${bot.tagalog.toUpperCase()}\n\n` +
         `${'─'.repeat(28)}\n` +
         `${resultMsg}\n` +
+        `💰 ${coinChange > 0 ? '+' : ''}${coinChange} coins → ${bold(newCoins.toLocaleString())} coins\n` +
         `${'─'.repeat(28)}\n\n` +
-        `📊 ${bold('Score:')} W${score.wins} / L${score.losses} / D${score.draws}\n` +
-        `💡 Laro ulit! ${global.config.PREFIX}rps [bato/papel/gunting]`,
+        `📊 W${p.wins} / L${p.losses} / D${p.draws} | WR ${wr}%\n` +
+        `💡 ${P}rps [bato/papel/gunting] | ${P}rich`,
         threadID, messageID
     );
 };
