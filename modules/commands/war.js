@@ -100,7 +100,7 @@ module.exports.run = async function ({ api, event, args }) {
         `💢 ${times} challenge messages sent!\n` +
         `😤 SINO ANG TATALO SAKIN DITO?!\n` +
         `⚡ LUMABAS NA KUNG MATAPANG KAY0!\n\n` +
-        `⚔️ — ${bold('TEAM STARTCOPE BETA')} — ⚔️`,
+        `⚔️ — ${bold('MGA UGOK')} — ⚔️`,
         threadID
     );
 };
