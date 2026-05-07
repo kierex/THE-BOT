@@ -103,7 +103,7 @@ module.exports.config = {
     name:            'autoreply',
     version:         '3.0.0',
     hasPermssion:    2,
-    credits:         'TEAM STARTCOPE BETA',
+    credits:         'xie',
     description:     'Auto-reply sa lahat ng mensahe kapag ON — may keyword rules + roast mode',
     commandCategory: 'Group',
     usages:          'autoreply [on/off/roast on|off/add/remove/list/clear]',
