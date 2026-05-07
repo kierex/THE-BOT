@@ -1,0 +1,21 @@
+[build]
+  command = "npm install"
+  publish = "web"
+
+[build.environment]
+  NETLIFY = "true"
+
+# Netlify serverless function — handles /api/search and /api/download
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "nft"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/health"
+  to = "/.netlify/functions/api/health"
+  status = 200
