@@ -1,0 +1,14 @@
+services:
+  - type: worker
+    name: the-bot
+    env: node
+    region: singapore
+    plan: free
+    buildCommand: npm install
+    startCommand: node index.js
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: APPSTATE
+        sync: false
