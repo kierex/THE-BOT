@@ -1,124 +1,114 @@
-const axios = require('axios');
+/**
+ * help.js — Command list viewer (plain text, no images)
+ * TEAM STARTCOPE BETA
+ */
 const bold = require('../../utils/bold');
 
 module.exports.config = {
-    name: "help",
-    version: "1.1.2",
-    hasPermssion: 2,
-    credits: "DC-Nam",
-    description: "View command list and info",
-    commandCategory: "General",
-    usages: "[command name / all]",
-    cooldowns: 5,
-    images: [],
+    name:            'help',
+    version:         '2.0.0',
+    hasPermssion:    0,
+    credits:         'TEAM STARTCOPE BETA',
+    description:     'View command list and detailed info per command',
+    commandCategory: 'General',
+    usages:          '[command name] | all',
+    cooldowns:       3,
 };
 
-async function getIbbDirectUrl(pageUrl) {
-    try {
-        const { data: html } = await axios.get(pageUrl, { timeout: 5000 });
-        const match = html.match(/property="og:image"\s+content="([^"]+)"/);
-        if (match && match[1]) return match[1];
-    } catch (e) {}
-    return null;
+function getPermText(p) {
+    return p === 0 ? '👤 Member' : p === 1 ? '⭐ Group Admin' : p === 2 ? '🌟 Bot Admin' : '👑 Owner';
 }
 
-module.exports.run = async function({ api, event, args }) {
-    const { threadID: tid, messageID: mid } = event;
-    var type = !args[0] ? "" : args[0].toLowerCase();
-    var msg = "", array = [], i = 0;
-    const cmds = global.client.commands;
-    const TIDdata = global.data.threadData.get(tid) || {};
-    const NameBot = global.config.BOTNAME;
-    const version = global.config.version;
-    var prefix = TIDdata.PREFIX || global.config.PREFIX;
+function buildCategories(cmds) {
+    const map = new Map();
+    for (const cmd of cmds.values()) {
+        const cat = cmd.config.commandCategory || 'Other';
+        if (!map.has(cat)) map.set(cat, []);
+        map.get(cat).push(cmd.config.name);
+    }
+    return map;
+}
 
-    const ibbUrl = "https://ibb.co/4gZpB7tw";
-    let bannerAttachment = null;
-    try {
-        const directUrl = await getIbbDirectUrl(ibbUrl);
-        if (directUrl) {
-            bannerAttachment = (await axios.get(directUrl, { responseType: "stream" })).data;
-        }
-    } catch (e) {}
+module.exports.run = async function ({ api, event, args }) {
+    const { threadID, messageID } = event;
+    const cmds   = global.client.commands;
+    const P      = (global.data.threadData.get(parseInt(event.threadID)) || {}).PREFIX
+                   || global.config.PREFIX;
+    const type   = (args[0] || '').toLowerCase();
 
-    if (type == "all") {
+    if (type === 'all') {
+        let msg = `╔══════════════════════════╗\n║  📚 ${bold('ALL COMMANDS')}         ║\n╚══════════════════════════╝\n\n`;
+        let i = 0;
         for (const cmd of cmds.values()) {
-            msg += `${++i}. ${bold(cmd.config.name)}\n   📝 ${cmd.config.description}\n${'─'.repeat(30)}\n`;
+            msg += `${++i}. ${bold(P + cmd.config.name)} — ${cmd.config.description}\n`;
         }
-        return api.sendMessage({
-            body: `📚 ${bold('ALL COMMANDS')} (${cmds.size} total)\n${'═'.repeat(32)}\n\n${msg}`,
-            attachment: bannerAttachment ? [bannerAttachment] : undefined
-        }, tid, mid);
+        msg += `\n📊 ${bold('Total:')} ${cmds.size} commands\n💡 ${P}help [command] for details`;
+        return api.sendMessage(msg, threadID, messageID);
     }
 
     if (type) {
-        for (const cmd of cmds.values()) array.push(cmd.config.name.toString());
-        if (!array.find(n => n == args[0].toLowerCase())) {
-            const stringSimilarity = require('string-similarity');
-            const commandName = args.shift().toLowerCase() || "";
-            let allCommandName = [];
-            for (const cmd of cmds.keys()) allCommandName.push(cmd);
-            const checker = stringSimilarity.findBestMatch(commandName, allCommandName);
+        const cmd = cmds.get(type) || cmds.get(type.replace(/^!/, ''));
+        if (!cmd) {
+            let best = '';
+            let bestScore = 0;
+            for (const k of cmds.keys()) {
+                let score = 0;
+                for (const c of type) if (k.includes(c)) score++;
+                if (score > bestScore) { bestScore = score; best = k; }
+            }
             return api.sendMessage(
-                `❎ ${bold('Command not found:')} ${type}\n💡 ${bold('Did you mean:')} "${checker.bestMatch.target}"`,
-                tid, mid
+                `❌ ${bold('Command not found:')} "${type}"\n` +
+                (best ? `💡 ${bold('Did you mean:')} "${best}"?` : `💡 ${P}help para makita lahat`),
+                threadID, messageID
             );
         }
-        const cmd = cmds.get(type).config;
-        const img = cmd.images || [];
-        let attachments = bannerAttachment ? [bannerAttachment] : [];
-        for (let i = 0; i < img.length; i++) {
-            try {
-                const stream = (await axios.get(img[i], { responseType: "stream" })).data;
-                attachments.push(stream);
-            } catch (e) {}
-        }
-        msg = `╔═══════════════════╗\n` +
-              `║  📖 ${bold('COMMAND INFO')}    ║\n` +
-              `╚═══════════════════╝\n\n` +
-              `📌 ${bold('Name:')} ${cmd.name}\n` +
-              `👤 ${bold('Author:')} ${cmd.credits}\n` +
-              `🌾 ${bold('Version:')} ${cmd.version}\n` +
-              `🔐 ${bold('Permission:')} ${getPermText(cmd.hasPermssion)}\n` +
-              `📝 ${bold('Description:')} ${cmd.description}\n` +
-              `🏷️ ${bold('Category:')} ${cmd.commandCategory}\n` +
-              `📎 ${bold('Usage:')} ${prefix}${cmd.usages}\n` +
-              `⏳ ${bold('Cooldown:')} ${cmd.cooldowns}s`;
-        return api.sendMessage({ body: msg, attachment: attachments.length ? attachments : undefined }, tid, mid);
-    } else {
-        buildCmdCategory(array, cmds);
-        array.sort(sortByLength("nameModule"));
-        for (const cmd of array) {
-            msg += `│\n│ 📂 ${bold(cmd.cmdCategory.toUpperCase())}\n├──────────⭔\n│ 📊 Total: ${cmd.nameModule.length} commands\n│ ${cmd.nameModule.join(", ")}\n├──────────⭔\n`;
-        }
-        const footer = `\n📊 ${bold('Total:')} ${cmds.size} commands\n` +
-            `🤖 ${bold('Bot:')} ${NameBot} v${version}\n` +
-            `👑 ${bold('Admin:')} Manuelson Yasis\n` +
-            `🔗 ${bold('FB:')} facebook.com/manuelson.yasis\n` +
-            `\n💡 ${prefix}help [command] → details\n💡 ${prefix}help all → full list`;
-
-        return api.sendMessage({
-            body: `╔══════════════════╗\n║  🤖 ${bold('MIRAI-V3 BOT')}  ║\n╚══════════════════╝\n\n╭──────────────⭓\n${msg}${footer}\n╰──────────────⭓`,
-            attachment: bannerAttachment ? [bannerAttachment] : undefined
-        }, tid);
+        const c = cmd.config;
+        return api.sendMessage(
+            `╔══════════════════════════╗\n` +
+            `║  📖 ${bold('COMMAND INFO')}        ║\n` +
+            `╚══════════════════════════╝\n\n` +
+            `📌 ${bold('Name:')} ${c.name}\n` +
+            `👤 ${bold('Author:')} ${c.credits || 'TEAM STARTCOPE BETA'}\n` +
+            `📦 ${bold('Version:')} ${c.version || '1.0.0'}\n` +
+            `🔐 ${bold('Permission:')} ${getPermText(c.hasPermssion)}\n` +
+            `📝 ${bold('Description:')} ${c.description}\n` +
+            `🏷️ ${bold('Category:')} ${c.commandCategory}\n` +
+            `📎 ${bold('Usage:')} ${P}${c.usages || c.name}\n` +
+            `⏳ ${bold('Cooldown:')} ${c.cooldowns || 3}s`,
+            threadID, messageID
+        );
     }
+
+    const categories = buildCategories(cmds);
+    let msg =
+        `╔══════════════════════════════╗\n` +
+        `║  🤖 ${bold('MIRAI-V5 BOT')} — ${bold('COMMANDS')}║\n` +
+        `║  ⚡ ${bold('TEAM STARTCOPE BETA')}    ║\n` +
+        `╚══════════════════════════════╝\n\n` +
+        `🔑 ${bold('Prefix:')} ${P}\n` +
+        `📊 ${bold('Total:')} ${cmds.size} commands\n\n`;
+
+    const catIcons = {
+        'Admin':   '🛡️',
+        'Games':   '🎮',
+        'General': '📋',
+        'AI':      '🤖',
+        'Group':   '👥',
+        'Other':   '📦',
+    };
+
+    for (const [cat, names] of categories) {
+        const icon = catIcons[cat] || '📦';
+        msg += `${'─'.repeat(32)}\n`;
+        msg += `${icon} ${bold(cat.toUpperCase())} (${names.length})\n`;
+        msg += names.map(n => `  • ${P}${n}`).join('\n') + '\n';
+    }
+
+    msg +=
+        `${'─'.repeat(32)}\n\n` +
+        `💡 ${P}help [command] → details\n` +
+        `💡 ${P}help all → full list\n\n` +
+        `🤖 ${bold('Bot:')} ${global.config.BOTNAME || 'Mirai-V5'} v${global.config.version || '5.0'}`;
+
+    return api.sendMessage(msg, threadID, messageID);
 };
-
-function buildCmdCategory(array, cmds) {
-    for (const cmd of cmds.values()) {
-        const { commandCategory, hasPermssion, name: nameModule } = cmd.config;
-        if (!array.find(i => i.cmdCategory == commandCategory)) {
-            array.push({ cmdCategory: commandCategory, permission: hasPermssion, nameModule: [nameModule] });
-        } else {
-            array.find(i => i.cmdCategory == commandCategory).nameModule.push(nameModule);
-        }
-    }
-}
-
-function sortByLength(k) {
-    return (a, b) => a[k].length > b[k].length ? -1 : a[k].length < b[k].length ? 1 : 0;
-}
-
-function getPermText(permission) {
-    return permission == 0 ? "👤 Member" : permission == 1 ? "⭐ Group Admin" : permission == 2 ? "🌟 Bot Admin" : "👑 Bot Owner";
-}
