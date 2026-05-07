@@ -15,7 +15,7 @@ module.exports.config = {
     name:        'joinNoti',
     eventType:   ['log:subscribe'],
     version:     '3.1.0',
-    credits:     'TEAM STARTCOPE BETA',
+    credits:     'xie',
     description: 'Welcome members with AI canva image. Bot join has custom Tagalog message.',
 };
 
@@ -111,7 +111,7 @@ module.exports.run = async function ({ api, event, Users }) {
             `📖 I-type ang ${global.config.PREFIX}help para sa commands!\n` +
             `🎮 ${global.config.PREFIX}register — libre 100 coins!\n` +
             `🏅 ${global.config.PREFIX}rich — game leaderboard\n\n` +
-            `⚡ — ${bold('TEAM STARTCOPE BETA')} — ⚡`;
+            `⚡ — ${bold('MGA UGOKK')} — ⚡`;
 
         // Generate AI welcome image (non-blocking)
         generateWelcomeImage(firstName).then(fp => {
