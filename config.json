@@ -20,8 +20,9 @@
     "EMAIL": "",
     "PASSWORD": "",
     "OTPKEY": "",
-    "FACEBOOK_ADMIN": "https://www.facebook.com/manuelson.yasis",
-    "BOTNAME": "Mirai-V3",
+    "FACEBOOK_ADMIN": "https://www.facebook.com/THEGOAT",
+    "ADMIN_NAME": "THE GOAT",
+    "BOTNAME": "THE-BOT V5",
     "PREFIX": "!",
     "BOXADMIN": "61588479630286",
     "ADMINBOT": [
@@ -32,7 +33,7 @@
         "502275138",
         "61588479630286"
     ],
-    "version": "3.0.0",
+    "version": "5.0.0",
     "menu": {
         "autoUnsend": {
             "status": false,
