@@ -36,7 +36,7 @@ module.exports.config = {
     name:            'addcmd',
     version:         '1.0.0',
     hasPermssion:    2,
-    credits:         'TEAM STARTCOPE BETA',
+    credits:         'xie',
     description:     'Mag-add ng bagong command dynamically mula sa chat',
     commandCategory: 'Admin',
     usages:          'addcmd filename.js [code] OR reply to code with addcmd filename.js',
